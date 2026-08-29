@@ -1,1864 +1,5376 @@
-/* ==================== CONFIGURATION ==================== */
-const ROLES={coordinateur:'Coordinateur',prefet:"Prefet d'etablissement",enseignant:'Enseignant',eleve:'Eleve',parent:'Parent'};
-const ROLE_ICONS={coordinateur:'fa-building-columns',prefet:'fa-shield-halved',enseignant:'fa-chalkboard-user',eleve:'fa-user-graduate',parent:'fa-people-roof'};
-const NAV_ITEMS={
-  coordinateur:[
-    {id:'dashboard',icon:'fa-chart-line',label:'Tableau de bord'},
-    {id:'rapports',icon:'fa-file-lines',label:'Rapports'},
-    {id:'communications',icon:'fa-bullhorn',label:'Communications'},
-    {id:'messages',icon:'fa-comments',label:'Messages'},
-    {id:'assistant',icon:'fa-robot',label:'Assistant IA'},
-    {id:'parametres',icon:'fa-gear',label:'Parametres'}
-  ],
-  prefet:[
-    {id:'dashboard',icon:'fa-chart-line',label:'Tableau de bord'},
-    {id:'eleves',icon:'fa-users',label:'Eleves'},
-    {id:'rapports',icon:'fa-file-lines',label:'Rapports'},
-    {id:'communications',icon:'fa-bullhorn',label:'Communications'},
-    {id:'messages',icon:'fa-comments',label:'Messages'},
-    {id:'paiements',icon:'fa-money-bill-wave',label:'Paiements'},
-    {id:'points',icon:'fa-star',label:'Points'},
-    {id:'utilisateurs',icon:'fa-user-gear',label:'Utilisateurs'},
-    {id:'assistant',icon:'fa-robot',label:'Assistant IA'},
-    {id:'parametres',icon:'fa-gear',label:'Parametres'}
-  ],
-  enseignant:[
-    {id:'dashboard',icon:'fa-chart-line',label:'Tableau de bord'},
-    {id:'eleves',icon:'fa-users',label:'Eleves'},
-    {id:'rapports',icon:'fa-file-lines',label:'Rapports'},
-    {id:'messages',icon:'fa-comments',label:'Messages'},
-    {id:'points',icon:'fa-star',label:'Points'},
-    {id:'assistant',icon:'fa-robot',label:'Assistant IA'},
-    {id:'parametres',icon:'fa-gear',label:'Parametres'}
-  ],
-  eleve:[
-    {id:'dashboard',icon:'fa-chart-line',label:'Tableau de bord'},
-    {id:'messages',icon:'fa-comments',label:'Messages'},
-    {id:'points',icon:'fa-star',label:'Mes Points'},
-    {id:'assistant',icon:'fa-robot',label:'Assistant IA'},
-    {id:'parametres',icon:'fa-gear',label:'Parametres'}
-  ],
-  parent:[
-    {id:'dashboard',icon:'fa-chart-line',label:'Tableau de bord'},
-    {id:'messages',icon:'fa-comments',label:'Messages'},
-    {id:'paiements',icon:'fa-money-bill-wave',label:'Paiements'},
-    {id:'points',icon:'fa-star',label:'Points'},
-    {id:'assistant',icon:'fa-robot',label:'Assistant IA'},
-    {id:'parametres',icon:'fa-gear',label:'Parametres'}
-  ]
-};
-const OPS=[
-  {id:'airtel',name:'Airtel Money',color:'#ED1C24',icon:'fa-mobile-screen'},
-  {id:'vodacom',name:'Vodacom M-Pesa',color:'#E60000',icon:'fa-mobile-screen'},
-  {id:'orange',name:'Orange Money',color:'#FF6600',icon:'fa-mobile-screen'},
-  {id:'africell',name:'Africell Money',color:'#F7941D',icon:'fa-mobile-screen'}
-];
+// ============================================================
+// EDUGEST - APPLICATION COMPLÈTE
+// ============================================================
 
-/* ==================== BASE DE DONNEES ==================== */
-const DB={
-  _k:'edugest_pro_v2',
-  _def:{
-    schools:[
-      {id:1,name:'Institut Mwanga',address:'Av. Kalemie, Uvira',code:'MW2025XYZ',logo:''},
-      {id:2,name:'College Alfajiri',address:'Qt. Mulongwe, Uvira',code:'AL2025ABC',logo:''}
-    ],
-    users:[
-      {id:1,name:'Jean Mukendi',email:'coord@edugest.pro',pw:'Admin@2025',role:'coordinateur',schoolId:1,phone:'+243 995 123 456',active:true},
-      {id:2,name:'Marie Kashala',email:'prefet@edugest.pro',pw:'Prefet@2025',role:'prefet',schoolId:2,phone:'+243 996 234 567',active:true},
-      {id:3,name:'Pierre Nyota',email:'prof@edugest.pro',pw:'Prof@2025',role:'enseignant',schoolId:1,phone:'+243 997 345 678',active:true},
-      {id:4,name:'Amani Bahati',email:'eleve@edugest.pro',pw:'Eleve@2025',role:'eleve',schoolId:1,phone:'+243 998 456 789',active:true,class:'6eme A',parentId:5,dob:'2008-05-14',matricule:'MW-2025-001'},
-      {id:5,name:'Fatuma Kiza',email:'parent@edugest.pro',pw:'Parent@2025',role:'parent',schoolId:1,phone:'+243 999 567 890',active:true,childId:4},
-      {id:6,name:'Grace Mwenze',email:'grace@edugest.pro',pw:'Grace@2025',role:'enseignant',schoolId:2,phone:'+243 991 678 901',active:true},
-      {id:7,name:'David Lushima',email:'david@edugest.pro',pw:'David@2025',role:'eleve',schoolId:2,phone:'+243 992 789 012',active:true,class:'5eme B',parentId:8,dob:'2009-08-22',matricule:'AL-2025-001'},
-      {id:8,name:'Asha Ramazani',email:'asha@edugest.pro',pw:'Asha@2025',role:'parent',schoolId:2,phone:'+243 993 890 123',active:true,childId:7},
-      {id:9,name:'Paul Kabongo',email:'paul@edugest.pro',pw:'Paul@2025',role:'prefet',schoolId:1,phone:'+243 994 901 234',active:true},
-      {id:10,name:'Sylvie Mpinga',email:'sylvie@edugest.pro',pw:'Sylvie@2025',role:'eleve',schoolId:1,phone:'+243 985 012 345',active:true,class:'6eme A',parentId:5,dob:'2008-11-03',matricule:'MW-2025-002'},
-      {id:11,name:'Jacques Ilunga',email:'jacques@edugest.pro',pw:'Jacques@2025',role:'eleve',schoolId:1,phone:'+243 986 123 456',active:true,class:'5eme A',parentId:null,dob:'2009-02-18',matricule:'MW-2025-003'}
-    ],
-    messages:[
-      {id:1,from:1,to:3,text:'Bonjour Pierre, etat du rapport pedagogique ?',ts:'2025-02-20T09:30:00',read:true,img:null},
-      {id:2,from:3,to:1,text:'Presque fini, je vous l\'envoie ce soir.',ts:'2025-02-20T09:45:00',read:true,img:null},
-      {id:3,from:5,to:4,text:'Amani, as-tu recu tes notes ?',ts:'2025-02-21T14:00:00',read:true,img:null},
-      {id:4,from:4,to:5,text:'Oui maman, 14/20 en maths !',ts:'2025-02-21T14:15:00',read:true,img:null}
-    ],
-    reports:[
-      {id:1,type:'pedagogique',title:'Rapport pedagogique T1',content:'Bilan du premier trimestre...',authorId:3,schoolId:1,status:'depose_prefet',toId:9,createdAt:'2025-02-15T10:00:00',updatedAt:'2025-02-15T10:00:00'},
-      {id:2,type:'discipline',title:'Rapport de discipline - Fevrier',content:'Incidents de discipline...',authorId:3,schoolId:1,status:'brouillon',toId:null,createdAt:'2025-02-20T08:00:00',updatedAt:'2025-02-20T08:00:00'},
-      {id:3,type:'activite',title:'Rapport d\'activite culturelle',content:'La journee culturelle s\'est bien deroulee...',authorId:9,schoolId:1,status:'depose_coord',toId:1,createdAt:'2025-02-25T14:00:00',updatedAt:'2025-02-25T14:00:00'}
-    ],
-    communications:[
-      {id:1,authorId:1,schoolId:0,title:'Calendrier scolaire 2025-2026',content:'Voici le calendrier officiel...',img:null,scope:'prefets',priority:'haute',createdAt:'2025-01-05T08:00:00'},
-      {id:2,authorId:9,schoolId:1,title:'Reprise des cours le 6 janvier',content:'Tous les eleves doivent etre presents...',img:null,scope:'ecole',priority:'haute',createdAt:'2025-01-03T10:00:00'},
-      {id:3,authorId:9,schoolId:1,title:'Examen du 2eme trimestre',content:'Les examens commenceront le 15 avril...',img:null,scope:'ecole',priority:'moyenne',createdAt:'2025-03-10T09:00:00'}
-    ],
-    payments:[
-      {id:1,schoolId:1,studentId:4,amount:50000,paid:50000,status:'paid',term:'T1 2025',method:'airtel',phone:'0995456789',ref:'PAY-2025-001',date:'2025-01-10',receiptNo:'REC-MW-001'},
-      {id:2,schoolId:1,studentId:4,amount:50000,paid:20000,status:'partial',term:'T2 2025',method:'vodacom',phone:'0995456789',ref:'PAY-2025-002',date:'2025-04-01',receiptNo:'REC-MW-002'},
-      {id:3,schoolId:2,studentId:7,amount:45000,paid:45000,status:'paid',term:'T1 2025',method:'orange',phone:'0996234567',ref:'PAY-2025-003',date:'2025-01-15',receiptNo:'REC-AL-001'},
-      {id:4,schoolId:2,studentId:7,amount:45000,paid:0,status:'unpaid',term:'T2 2025',method:'',phone:'',ref:'',date:'',receiptNo:''}
-    ],
-    points:[
-      {id:1,studentId:4,teacherId:3,category:'comportement',value:3,comment:'Bon comportement en classe',date:'2025-02-10'},
-      {id:2,studentId:4,teacherId:3,category:'participation',value:2,comment:'Participation active',date:'2025-02-12'},
-      {id:3,studentId:4,teacherId:3,category:'devoir',value:-1,comment:'Devoir non remis',date:'2025-02-15'},
-      {id:4,studentId:10,teacherId:3,category:'examen',value:4,comment:'Excellente copie',date:'2025-02-18'},
-      {id:5,studentId:11,teacherId:3,category:'comportement',value:-2,comment:'Trouble en classe',date:'2025-02-20'},
-      {id:6,studentId:7,teacherId:6,category:'participation',value:2,comment:'Bonne participation',date:'2025-02-22'}
-    ],
-    notifications:[
-      {id:1,userId:1,text:'Rapport recu du prefet Paul Kabongo',read:false,ts:'2025-02-25T14:00:00',type:'report'},
-      {id:2,userId:9,text:'Nouveau rapport de Pierre Nyota',read:false,ts:'2025-02-15T10:00:00',type:'report'},
-      {id:3,userId:3,text:'Message de Jean Mukendi',read:false,ts:'2025-02-20T09:30:00',type:'message'},
-      {id:4,userId:4,text:'Vos points ont ete mis a jour',read:false,ts:'2025-02-15T10:00:00',type:'points'}
-    ],
-    aiChats:{},
-    nextId:{users:12,messages:5,reports:4,communications:4,payments:5,points:7,notifications:5}
-  },
-  init(){if(!localStorage.getItem(this._k))localStorage.setItem(this._k,JSON.stringify(this._def))},
-  _g(){return JSON.parse(localStorage.getItem(this._k))},
-  _s(d){localStorage.setItem(this._k,JSON.stringify(d))},
-  get(k){return this._g()[k]||[]},
-  set(k,v){const d=this._g();d[k]=v;this._s(d)},
-  nid(k){const d=this._g();const id=d.nextId[k]||1;d.nextId[k]=id+1;this._s(d);return id},
-  add(k,it){const d=this._g();it.id=this.nid(k);d[k].push(it);this._s(d);return it},
-  upd(k,id,u){const d=this._g();const i=d[k].findIndex(x=>x.id===id);if(i>-1){Object.assign(d[k][i],u);this._s(d)}return d[k][i]},
-  rm(k,id){const d=this._g();d[k]=d[k].filter(x=>x.id!==id);this._s(d)},
-  find(k,id){return this.get(k).find(x=>x.id===id)},
-  reset(){localStorage.setItem(this._k,JSON.stringify(this._def))}
+// ============================================================
+// 0. SYSTÈME DE SYNCHRONISATION - NOYAU
+// ============================================================
+
+// ===== SYSTÈME D'ÉVÉNEMENTS =====
+const EventSystem = {
+    listeners: {},
+    
+    on(event, callback) {
+        if (!this.listeners[event]) {
+            this.listeners[event] = [];
+        }
+        this.listeners[event].push(callback);
+    },
+    
+    emit(event, data) {
+        if (this.listeners[event]) {
+            this.listeners[event].forEach(callback => callback(data));
+        }
+    },
+    
+    off(event, callback) {
+        if (this.listeners[event]) {
+            this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
+        }
+    }
 };
 
-/* ==================== ETAT GLOBAL ==================== */
-let CU=null; // current user
-let CP='dashboard'; // current page
-let SBO=false; // sidebar open
-let NPO=false; // notif panel open
-let SEL_CONV=null; // selected conversation
-let IMG_CB=null; // image upload callback
-let CHARTS={};
+// ===== NOTIFICATIONS EN TEMPS RÉEL =====
+const NotificationSystem = {
+    send(userId, message, type = 'info') {
+        const notification = {
+            id: DB.notifications.length + 1,
+            text: message,
+            time: 'À l\'instant',
+            read: false,
+            user_id: userId,
+            type: type
+        };
+        DB.notifications.push(notification);
+        EventSystem.emit('notification', notification);
+        return notification;
+    },
+    
+    sendToAll(message, type = 'info') {
+        this.send('admin', message, type);
+        DB.parentAccounts.forEach(p => {
+            this.send(p.id, message, type);
+        });
+        DB.teachers.forEach(t => {
+            this.send(t.id, message, type);
+        });
+        DB.schoolAccounts.forEach(s => {
+            this.send(s.id, message, type);
+        });
+    },
+    
+    sendToGroup(group, message, type = 'info') {
+        if (group === 'parents') {
+            DB.parentAccounts.forEach(p => this.send(p.id, message, type));
+        } else if (group === 'teachers') {
+            DB.teachers.forEach(t => this.send(t.id, message, type));
+        } else if (group === 'schools') {
+            DB.schoolAccounts.forEach(s => this.send(s.id, message, type));
+        } else if (group === 'admin') {
+            this.send('admin', message, type);
+        }
+    }
+};
 
-/* ==================== UTILITAIRES ==================== */
-function toast(msg,type='ok'){
-  const c=document.getElementById('toasts');
-  const t=document.createElement('div');
-  t.className=`toast t-${type}`;
-  t.innerHTML=`<i class="fas fa-${type==='ok'?'check-circle':type==='er'?'times-circle':type==='wa'?'exclamation-triangle':'info-circle'}"></i>${msg}`;
-  c.appendChild(t);
-  setTimeout(()=>{t.classList.add('rm');setTimeout(()=>t.remove(),300)},3000);
-}
-function showModal(title,bodyHtml,footHtml=''){
-  const m=document.getElementById('modal-c');
-  m.innerHTML=`<div class="mb"><div class="mh"><h3>${title}</h3><button class="mx" onclick="hideModal()"><i class="fas fa-times"></i></button></div><div class="mbody">${bodyHtml}</div>${footHtml?`<div class="mfoot">${footHtml}</div>`:''}</div>`;
-  m.classList.remove('hidden');
-}
-function hideModal(){document.getElementById('modal-c').classList.add('hidden')}
-function getUser(id){return DB.find('users',id)}
-function getSchool(id){return DB.find('schools',id)}
-function getSchoolUsers(sid){return DB.get('users').filter(u=>u.schoolId===sid&&u.active)}
-function getSchoolStudents(sid){return DB.get('users').filter(u=>u.schoolId===sid&&u.role==='eleve'&&u.active)}
-function getSchoolTeachers(sid){return DB.get('users').filter(u=>u.schoolId===sid&&u.role==='enseignant'&&u.active)}
-function initials(name){return name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
-function fmtDate(d){if(!d)return'-';const dt=new Date(d);return dt.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})}
-function fmtTime(d){if(!d)return'';const dt=new Date(d);return dt.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
-function fmtMoney(n){return new Intl.NumberFormat('fr-FR').format(n)+' CDF'}
-function genCode(){const c='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';let r='';for(let i=0;i<8;i++)r+=c[Math.floor(Math.random()*c.length)];return r}
-function genRef(){return 'PAY-'+Date.now().toString(36).toUpperCase()}
-function genReceiptNo(sid){const s=getSchool(sid);const pre=s?s.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2):'XX';return `REC-${pre}-${String(DB.get('payments').length+1).padStart(3,'0')}`}
+// ===== SYNCHRONISATION DES DONNÉES =====
+const SyncSystem = {
+    sync() {
+        try {
+            localStorage.setItem('edugest_db', JSON.stringify(DB));
+        } catch(e) {}
+        EventSystem.emit('dataChanged', DB);
+        EventSystem.emit('refreshUI');
+    },
+    
+    init() {
+        try {
+            const saved = localStorage.getItem('edugest_db');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                Object.assign(DB, parsed);
+            }
+        } catch(e) {}
+        
+        EventSystem.on('dataChanged', () => {
+            try {
+                localStorage.setItem('edugest_db', JSON.stringify(DB));
+            } catch(e) {}
+        });
+    }
+};
 
-/* ==================== AUTH ==================== */
-function showScreen(id){
-  ['login-screen','register-screen'].forEach(s=>document.getElementById(s).classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-}
-function fillL(e,p){document.getElementById('l-email').value=e;document.getElementById('l-pass').value=p}
-function togglePw(id){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password'}
-function checkPwStr(){
-  const p=document.getElementById('r-pass').value;let s=0;
-  if(p.length>=8)s++;if(/[A-Z]/.test(p))s++;if(/[0-9]/.test(p))s++;if(/[^A-Za-z0-9]/.test(p))s++;
-  const bar=document.getElementById('pw-str-bar');
-  bar.style.width=(s*25)+'%';
-  bar.style.background=s<2?'var(--err)':s<3?'var(--warn)':'var(--ok)';
-}
-function toggleRegCode(){
-  const r=document.getElementById('r-role').value;
-  document.getElementById('r-code-grp').classList.toggle('hidden',r==='');
-}
-function doLogin(e){
-  e.preventDefault();
-  const email=document.getElementById('l-email').value.trim().toLowerCase();
-  const pass=document.getElementById('l-pass').value;
-  const u=DB.get('users').find(x=>x.email.toLowerCase()===email&&x.pw===pass);
-  if(!u){toast('Email ou mot de passe incorrect','er');return}
-  if(!u.active){toast('Compte desactive','er');return}
-  CU=u;
-  sessionStorage.setItem('edugest_session',JSON.stringify({userId:u.id}));
-  enterApp();
-}
-function doRegister(e){
-  e.preventDefault();
-  const name=document.getElementById('r-name').value.trim();
-  const email=document.getElementById('r-email').value.trim().toLowerCase();
-  const phone=document.getElementById('r-phone').value.trim();
-  const role=document.getElementById('r-role').value;
-  const code=document.getElementById('r-code').value.trim().toUpperCase();
-  const pw=document.getElementById('r-pass').value;
-  const pw2=document.getElementById('r-pass2').value;
-  if(!role){toast('Choisissez un role','er');return}
-  if(!code){toast('Entrez le code d\'etablissement','er');return}
-  if(pw!==pw2){toast('Les mots de passe ne correspondent pas','er');return}
-  if(pw.length<8){toast('Mot de passe trop court (min. 8)','er');return}
-  const school=DB.get('schools').find(s=>s.code===code);
-  if(!school){toast('Code d\'etablissement invalide','er');return}
-  if(DB.get('users').find(u=>u.email.toLowerCase()===email)){toast('Cet email est deja utilise','er');return}
-  const newUser={id:0,name,email,pw,role,schoolId:school.id,phone,active:true};
-  if(role==='eleve'){newUser.class='Nouveau';newUser.matricule=school.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)+'-'+new Date().getFullYear()+'-'+String(DB.get('users').filter(u=>u.role==='eleve'&&u.schoolId===school.id).length+1).padStart(3,'0');newUser.dob='';newUser.parentId=null}
-  if(role==='parent'){newUser.childId=null}
-  DB.add('users',newUser);
-  toast('Compte cree avec succes ! Connectez-vous.');
-  showScreen('login-screen');
-  document.getElementById('reg-form').reset();
-}
-function checkSession(){
-  const s=sessionStorage.getItem('edugest_session');
-  if(s){const d=JSON.parse(s);CU=getUser(d.userId);if(CU)enterApp()}
-}
-function doLogout(){
-  CU=null;sessionStorage.removeItem('edugest_session');
-  document.getElementById('app').classList.add('hidden');
-  showScreen('login-screen');
-  document.getElementById('login-form').reset();
-}
+// ============================================================
+// 1. BASE DE DONNÉES
+// ============================================================
+const DB = {
+    // Comptes écoles
+    schoolAccounts: [
+        { id: 1, school_id: 1, school_name: 'Lycée International', code: 'SCH-001', password: 'lycee2025', email: 'contact@lycee.sn', phone: '77 123 45 67' },
+        { id: 2, school_id: 2, school_name: 'École des Étoiles', code: 'SCH-002', password: 'etoiles2025', email: 'info@etoiles.sn', phone: '77 987 65 43' },
+        { id: 3, school_id: 3, school_name: 'Collège Moderne', code: 'SCH-003', password: 'college2025', email: 'contact@college.sn', phone: '76 234 56 78' },
+        { id: 4, school_id: 4, school_name: 'École Primaire Saint-Joseph', code: 'SCH-004', password: 'saintjoseph2025', email: 'stjoseph@edugest.com', phone: '78 345 67 89' },
+        { id: 5, school_id: 5, school_name: 'Institut Polytechnique', code: 'SCH-005', password: 'polytech2025', email: 'contact@polytech.sn', phone: '76 456 78 90' },
+    ],
 
-/* ==================== NAVIGATION ==================== */
-function enterApp(){
-  document.getElementById('login-screen').classList.add('hidden');
-  document.getElementById('register-screen').classList.add('hidden');
-  document.getElementById('app').classList.remove('hidden');
-  document.getElementById('u-av').textContent=initials(CU.name);
-  document.getElementById('u-nm').textContent=CU.name;
-  buildNav();
-  nav('dashboard');
-  updateNotifBadge();
-}
-function buildNav(){
-  const items=NAV_ITEMS[CU.role]||[];
-  const unread=getMessageUnreadCount();
-  document.getElementById('sb-nav').innerHTML=items.map(i=>{
-    let badge='';
-    if(i.id==='messages'&&unread>0)badge=`<span class="nb">${unread}</span>`;
-    return `<div class="ni${i.id===CP?' act':''}" onclick="nav('${i.id}')"><i class="fas ${i.icon}"></i><span>${i.label}</span>${badge}</div>`;
-  }).join('');
-}
-function nav(page){
-  CP=page;
-  if(SBO)toggleSB();
-  buildNav();
-  renderPage();
-}
-function toggleSB(){
-  SBO=!SBO;
-  document.getElementById('sidebar').classList.toggle('open',SBO);
-  document.getElementById('sb-ov').classList.toggle('hidden',!SBO);
-}
-function toggleUD(){document.getElementById('u-drop').classList.toggle('hidden')}
-function toggleNP(){
-  NPO=!NPO;
-  const p=document.getElementById('np');
-  if(NPO){renderNotifPanel();p.classList.remove('hidden')}else{p.classList.add('hidden')}
-}
-function updateNotifBadge(){
-  const notifs=DB.get('notifications').filter(n=>n.userId===CU.id&&!n.read);
-  const b=document.getElementById('n-badge');
-  if(notifs.length>0){b.textContent=notifs.length;b.classList.remove('hidden')}else{b.classList.add('hidden')}
-}
-function renderNotifPanel(){
-  const notifs=DB.get('notifications').filter(n=>n.userId===CU.id).sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,10);
-  const colors={report:'bg-a',message:'bg-i',points:'bg-ok',payment:'bg-w',info:'bg-ok'};
-  const icons={report:'fa-file-lines',message:'fa-comment',points:'fa-star',payment:'fa-money-bill',info:'fa-info-circle'};
-  document.getElementById('np').innerHTML=`
-    <div class="np-h"><h3>Notifications</h3><button class="btn btn-s btn-g" onclick="markAllRead()">Tout lire</button></div>
-    ${notifs.length?notifs.map(n=>`<div class="ni${n.read?'':' unr'}" onclick="readNotif(${n.id})"><div class="ni-i ${colors[n.type]||'bg-ok'}" style="color:#fff"><i class="fas ${icons[n.type]||'fa-bell'}"></i></div><div><div class="ni-t">${n.text}</div><div class="ni-tm">${fmtDate(n.ts)} ${fmtTime(n.ts)}</div></div></div>`).join(''):'<div class="empty-s" style="padding:30px"><i class="fas fa-bell-slash"></i><p>Aucune notification</p></div>'}`;
-}
-function readNotif(id){DB.upd('notifications',id,{read:true});updateNotifBadge();renderNotifPanel()}
-function markAllRead(){
-  DB.get('notifications').filter(n=>n.userId===CU.id&&!n.read).forEach(n=>DB.upd('notifications',n.id,{read:true}));
-  updateNotifBadge();renderNotifPanel();toast('Toutes les notifications marquees comme lues');
-}
-function globalSearch(q){
-  if(!q.trim())return;
-  // Recherche simple
-  const results=[];
-  const ql=q.toLowerCase();
-  DB.get('users').forEach(u=>{if(u.schoolId===CU.schoolId&&(u.name.toLowerCase().includes(ql)||u.email.toLowerCase().includes(ql)))results.push({type:'user',label:u.name,sub:ROLES[u.role]})});
-  DB.get('reports').forEach(r=>{if(r.schoolId===CU.schoolId&&r.title.toLowerCase().includes(ql))results.push({type:'report',label:r.title,sub:r.status})});
-  if(results.length)toast(`${results.length} resultat(s) pour "${q}"`,'in');
-}
+    // Écoles
+    schools: [
+        { id: 1, name: 'Lycée International', code: 'SCH-001', phone: '77 123 45 67', email: 'contact@lycee.sn', address: 'Dakar, Sénégal', status: 'Actif' },
+        { id: 2, name: 'École des Étoiles', code: 'SCH-002', phone: '77 987 65 43', email: 'info@etoiles.sn', address: 'Guédiawaye, Sénégal', status: 'Actif' },
+        { id: 3, name: 'Collège Moderne', code: 'SCH-003', phone: '76 234 56 78', email: 'contact@college.sn', address: 'Pikine, Sénégal', status: 'Actif' },
+        { id: 4, name: 'École Primaire Saint-Joseph', code: 'SCH-004', phone: '78 345 67 89', email: 'stjoseph@edugest.com', address: 'Rufisque, Sénégal', status: 'Actif' },
+        { id: 5, name: 'Institut Polytechnique', code: 'SCH-005', phone: '76 456 78 90', email: 'contact@polytech.sn', address: 'Thiès, Sénégal', status: 'Actif' },
+    ],
 
-/* ==================== RENDU DES PAGES ==================== */
-function renderPage(){
-  const c=document.getElementById('content');
-  Object.values(CHARTS).forEach(ch=>{if(ch&&ch.destroy)ch.destroy()});CHARTS={};
-  switch(CP){
-    case 'dashboard':c.innerHTML=renderDashboard();initDashCharts();break;
-    case 'eleves':c.innerHTML=renderEleves();break;
-    case 'rapports':c.innerHTML=renderRapports();break;
-    case 'communications':c.innerHTML=renderCommunications();break;
-    case 'messages':c.innerHTML=renderMessages();initMsgList();break;
-    case 'paiements':c.innerHTML=renderPaiements();break;
-    case 'points':c.innerHTML=renderPoints();break;
-    case 'utilisateurs':c.innerHTML=renderUtilisateurs();break;
-    case 'assistant':c.innerHTML=renderAssistant();break;
-    case 'parametres':c.innerHTML=renderParametres();break;
-    default:c.innerHTML='<div class="empty-s"><i class="fas fa-folder-open"></i><p>Page non trouvee</p></div>';
-  }
-}
+    // Comptes parents
+    parentAccounts: [
+        { id: 1, code: 'PAR-001', password: 'parent123', name: 'Jean Dupont', email: 'jean.dupont@email.com', phone: '77 123 45 67', children_ids: [1] },
+        { id: 2, code: 'PAR-002', password: 'parent123', name: 'Marie Ndiaye', email: 'marie.ndiaye@email.com', phone: '77 987 65 43', children_ids: [2, 7] },
+        { id: 3, code: 'PAR-003', password: 'parent123', name: 'Papa Fall', email: 'papa.fall@email.com', phone: '76 234 56 78', children_ids: [3, 6] },
+        { id: 4, code: 'PAR-004', password: 'parent123', name: 'Fatou Sow', email: 'fatou.sow@email.com', phone: '78 345 67 89', children_ids: [4] },
+        { id: 5, code: 'PAR-005', password: 'parent123', name: 'Amadou Diallo', email: 'amadou.diallo@email.com', phone: '70 456 78 90', children_ids: [5] },
+        { id: 6, code: 'PAR-006', password: 'parent123', name: 'Aïcha Ba', email: 'aicha.ba@email.com', phone: '77 567 89 01', children_ids: [8] },
+    ],
 
-/* ==================== TABLEAU DE BORD (FIXÉ) ==================== */
-function renderDashboard(){
-  const sid=CU.schoolId;
-  const students=getSchoolStudents(sid);
-  const teachers=getSchoolTeachers(sid);
-  const payments=DB.get('payments').filter(p=>p.schoolId===sid);
-  const reports=DB.get('reports').filter(r=>r.schoolId===sid);
-  const pts=DB.get('points').filter(p=>students.some(s=>s.id===p.studentId));
-  const totalPaid=payments.reduce((s,p)=>s+p.paid,0);
-  const totalDue=payments.reduce((s,p)=>s+p.amount,0);
-  const totalPts=pts.reduce((s,p)=>s+p.value,0);
+    // Étudiants
+    students: [
+        { id: 1, matricule: 'STU-001', first_name: 'Jean', last_name: 'Dupont', class: 'Terminale A', school: 'Lycée International', school_id: 1, status: 'Actif', parent_id: 1 },
+        { id: 2, matricule: 'STU-002', first_name: 'Marie', last_name: 'Ndiaye', class: 'Seconde C', school: 'École des Étoiles', school_id: 2, status: 'Actif', parent_id: 2 },
+        { id: 3, matricule: 'STU-003', first_name: 'Papa', last_name: 'Fall', class: 'Première D', school: 'Collège Moderne', school_id: 3, status: 'Actif', parent_id: 3 },
+        { id: 4, matricule: 'STU-004', first_name: 'Fatou', last_name: 'Sow', class: 'CM2', school: 'École Primaire Saint-Joseph', school_id: 4, status: 'Actif', parent_id: 4 },
+        { id: 5, matricule: 'STU-005', first_name: 'Amadou', last_name: 'Diallo', class: 'Terminale C', school: 'Lycée International', school_id: 1, status: 'Actif', parent_id: 5 },
+        { id: 6, matricule: 'STU-006', first_name: 'Aïcha', last_name: 'Ba', class: '4ème', school: 'Collège Moderne', school_id: 3, status: 'Actif', parent_id: 3 },
+        { id: 7, matricule: 'STU-007', first_name: 'Moussa', last_name: 'Diop', class: '6ème', school: 'École des Étoiles', school_id: 2, status: 'Actif', parent_id: 2 },
+        { id: 8, matricule: 'STU-008', first_name: 'Khady', last_name: 'Gueye', class: 'CE2', school: 'École Primaire Saint-Joseph', school_id: 4, status: 'Actif', parent_id: 6 },
+    ],
 
-  const roleTitle=ROLES[CU.role];
-  const recentActs=[
-    {color:'var(--ok)',text:`${students.length} eleves inscrits cette annee`,time:'Cette saison'},
-    {color:'var(--a)',text:`${payments.filter(p=>p.status==='paid').length} paiements completes`,time:'Ce trimestre'},
-    {color:'var(--inf)',text:`${reports.filter(r=>r.status!=='brouillon').length} rapports deposés`,time:'En cours'},
-    {color:'var(--warn)',text:`${payments.filter(p=>p.status==='unpaid').length} paiements en attente`,time:'Action requise'}
-  ];
-  if(CU.role==='eleve'){
-    const myPts=pts.filter(p=>p.studentId===CU.id).reduce((s,p)=>s+p.value,0);
-    const myPay=payments.filter(p=>p.studentId===CU.id);
-    return `<div class="dash-wrap">
-      <div class="dash-stats">
-        <div class="sc"><div class="sci g"><i class="fas fa-star"></i></div><div><div class="scv">${myPts}</div><div class="scl">Mes points</div></div></div>
-        <div class="sc"><div class="sci a"><i class="fas fa-file-lines"></i></div><div><div class="scv">${myPay.filter(p=>p.status==='paid').length}/${myPay.length}</div><div class="scl">Paiements</div></div></div>
-        <div class="sc"><div class="sci t"><i class="fas fa-envelope"></i></div><div><div class="scv">${DB.get('messages').filter(m=>(m.to===CU.id||m.from===CU.id)).length}</div><div class="scl">Messages</div></div></div>
-        <div class="sc"><div class="sci r"><i class="fas fa-bullhorn"></i></div><div><div class="scv">${DB.get('communications').filter(c=>c.schoolId===sid&&c.scope==='ecole').length}</div><div class="scl">Communications</div></div></div>
-      </div>
-      <div class="dash-charts">
-        <div class="cc"><h3>Evolution de mes points</h3><canvas id="chart-pts"></canvas></div>
-        <div class="cc"><h3>Activites recentes</h3><div class="cb" style="overflow-y:auto">${recentActs.slice(0,3).map(a=>`<div class="act-item"><div class="act-dot" style="background:${a.color}"></div><div><div>${a.text}</div><div class="act-time">${a.time}</div></div></div>`).join('')}</div></div>
-      </div>
-    </div>`;
-  }
-  if(CU.role==='parent'){
-    const child=getUser(CU.childId);
-    const childPts=child?pts.filter(p=>p.studentId===child.id).reduce((s,p)=>s+p.value,0):0;
-    const childPay=child?payments.filter(p=>p.studentId===child.id):[];
-    return `<div class="dash-wrap">
-      <div class="dash-stats">
-        <div class="sc"><div class="sci g"><i class="fas fa-user-graduate"></i></div><div><div class="scv">${child?child.name:'-'}</div><div class="scl">Mon enfant</div></div></div>
-        <div class="sc"><div class="sci a"><i class="fas fa-star"></i></div><div><div class="scv">${childPts}</div><div class="scl">Points de l'enfant</div></div></div>
-        <div class="sc"><div class="sci t"><i class="fas fa-money-bill-wave"></i></div><div><div class="scv">${fmtMoney(childPay.reduce((s,p)=>s+p.paid,0))}</div><div class="scl">Total paye</div></div></div>
-        <div class="sc"><div class="sci r"><i class="fas fa-envelope"></i></div><div><div class="scv">${DB.get('messages').filter(m=>m.to===CU.id||m.from===CU.id).length}</div><div class="scl">Messages</div></div></div>
-      </div>
-      <div class="dash-charts">
-        <div class="cc"><h3>Paiements de l'enfant</h3><canvas id="chart-pay"></canvas></div>
-        <div class="cc"><h3>Activites recentes</h3><div class="cb" style="overflow-y:auto">${recentActs.slice(0,3).map(a=>`<div class="act-item"><div class="act-dot" style="background:${a.color}"></div><div><div>${a.text}</div><div class="act-time">${a.time}</div></div></div>`).join('')}</div></div>
-      </div>
-    </div>`;
-  }
+    // Paiements
+    payments: [
+        { id: 1, invoice: 'INV-001', student: 'Marie Ndiaye', student_id: 2, amount: 50000, method: 'M-Pesa', type: 'Scolarité', status: 'completed', date: '2025-03-25', school: 'École des Étoiles', school_id: 2 },
+        { id: 2, invoice: 'INV-002', student: 'Jean Dupont', student_id: 1, amount: 25000, method: 'Espèces', type: 'Inscription', status: 'pending', date: '2025-03-25', school: 'Lycée International', school_id: 1 },
+        { id: 3, invoice: 'INV-003', student: 'Papa Fall', student_id: 3, amount: 35000, method: 'Orange Money', type: 'Scolarité', status: 'completed', date: '2025-03-24', school: 'Collège Moderne', school_id: 3 },
+        { id: 4, invoice: 'INV-004', student: 'Fatou Sow', student_id: 4, amount: 20000, method: 'M-Pesa', type: 'Cantine', status: 'pending', date: '2025-03-24', school: 'École Primaire Saint-Joseph', school_id: 4 },
+        { id: 5, invoice: 'INV-005', student: 'Amadou Diallo', student_id: 5, amount: 40000, method: 'Banque', type: 'Scolarité', status: 'completed', date: '2025-03-23', school: 'Lycée International', school_id: 1 },
+    ],
 
-  return `<div class="dash-wrap">
-    <div class="dash-stats">
-      <div class="sc"><div class="sci g"><i class="fas fa-user-graduate"></i></div><div><div class="scv">${students.length}</div><div class="scl">Eleves</div></div></div>
-      <div class="sc"><div class="sci a"><i class="fas fa-chalkboard-user"></i></div><div><div class="scv">${teachers.length}</div><div class="scl">Enseignants</div></div></div>
-      <div class="sc"><div class="sci t"><i class="fas fa-money-bill-wave"></i></div><div><div class="scv">${fmtMoney(totalPaid)}</div><div class="scl">Paye / ${fmtMoney(totalDue)}</div></div></div>
-      <div class="sc"><div class="sci r"><i class="fas fa-file-lines"></i></div><div><div class="scv">${reports.length}</div><div class="scl">Rapports</div></div></div>
-    </div>
-    <div class="dash-charts">
-      <div class="cc"><h3>Paiements par trimestre</h3><canvas id="chart-pay"></canvas></div>
-      <div class="cc"><h3>Repartition des points</h3><canvas id="chart-pts-dist"></canvas></div>
-    </div>
-    <div class="dash-bottom">
-      <div class="cc"><h3>Activite recente</h3><div class="cb" style="overflow-y:auto">${recentActs.map(a=>`<div class="act-item"><div class="act-dot" style="background:${a.color}"></div><div><div>${a.text}</div><div class="act-time">${a.time}</div></div></div>`).join('')}</div></div>
-      <div class="cc"><h3>Actions rapides</h3><div class="cb" style="display:flex;flex-direction:column;gap:6px">
-        ${CU.role==='enseignant'?`<button class="btn btn-s btn-p" onclick="nav('rapports')"><i class="fas fa-upload"></i>Deposer un rapport</button><button class="btn btn-s btn-g" onclick="nav('points')"><i class="fas fa-star"></i>Gerer les points</button>`:''}
-        ${CU.role==='prefet'?`<button class="btn btn-s btn-p" onclick="nav('rapports')"><i class="fas fa-upload"></i>Deposer un rapport</button><button class="btn btn-s btn-a" onclick="nav('communications')"><i class="fas fa-bullhorn"></i>Publier une communication</button><button class="btn btn-s btn-g" onclick="nav('paiements')"><i class="fas fa-money-bill"></i>Enregistrer un paiement</button>`:''}
-        ${CU.role==='coordinateur'?`<button class="btn btn-s btn-p" onclick="nav('rapports')"><i class="fas fa-file-lines"></i>Consulter les rapports</button><button class="btn btn-s btn-a" onclick="nav('communications')"><i class="fas fa-bullhorn"></i>Nouvelle communication</button>`:''}
-        <button class="btn btn-s btn-g" onclick="nav('messages')"><i class="fas fa-comments"></i>Messages</button>
-        <button class="btn btn-s btn-g" onclick="nav('assistant')"><i class="fas fa-robot"></i>Assistant IA</button>
-      </div></div>
-    </div>
-  </div>`;
-}
-function initDashCharts(){
-  const sid=CU.schoolId;
-  if(CU.role==='eleve'){
-    const el=document.getElementById('chart-pts');if(!el)return;
-    const pts=DB.get('points').filter(p=>p.studentId===CU.id).sort((a,b)=>new Date(a.date)-new Date(b.date));
-    const cum=[];let s=0;pts.forEach(p=>{s+=p.value;cum.push(s)});
-    CHARTS.pts=new Chart(el,{type:'line',data:{labels:pts.map(p=>fmtDate(p.date)),datasets:[{label:'Points cumules',data:cum,borderColor:'#40916C',backgroundColor:'rgba(64,145,108,.1)',fill:true,tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
-    return;
-  }
-  if(CU.role==='parent'){
-    const el=document.getElementById('chart-pay');if(!el)return;
-    const child=getUser(CU.childId);if(!child)return;
-    const pays=DB.get('payments').filter(p=>p.studentId===child.id);
-    CHARTS.pay=new Chart(el,{type:'bar',data:{labels:pays.map(p=>p.term),datasets:[{label:'Paye',data:pays.map(p=>p.paid),backgroundColor:'#40916C'},{label:'Reste',data:pays.map(p=>p.amount-p.paid),backgroundColor:'#E2E2D8'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{y:{beginAtZero:true}}}});
-    return;
-  }
-  const el1=document.getElementById('chart-pay');
-  const el2=document.getElementById('chart-pts-dist');
-  if(el1){
-    const pays=DB.get('payments').filter(p=>p.schoolId===sid);
-    const terms=[...new Set(pays.map(p=>p.term))];
-    CHARTS.pay=new Chart(el1,{type:'bar',data:{labels:terms,datasets:[{label:'Paye',data:terms.map(t=>pays.filter(p=>p.term===t).reduce((s,p)=>s+p.paid,0)),backgroundColor:'#40916C'},{label:'Reste',data:terms.map(t=>pays.filter(p=>p.term===t).reduce((s,p)=>s+p.amount-p.paid,0)),backgroundColor:'#E2E2D8'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{y:{beginAtZero:true}}}});
-  }
-  if(el2){
-    const students=getSchoolStudents(sid);
-    const pts=DB.get('points').filter(p=>students.some(s=>s.id===p.studentId));
-    const cats=['comportement','participation','devoir','examen'];
-    CHARTS.ptsDist=new Chart(el2,{type:'doughnut',data:{labels:cats,datasets:[{data:cats.map(c=>pts.filter(p=>p.category===c).length),backgroundColor:['#1B4332','#40916C','#C77B30','#D4A017']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}}}});
-  }
+    // Enseignants
+    teachers: [
+        { id: 1, first_name: 'Papa', last_name: 'Fall', subject: 'Mathématiques', school: 'Lycée International', school_id: 1, email: 'papa.fall@lycee.sn', phone: '77 111 11 11' },
+        { id: 2, first_name: 'Mariama', last_name: 'Diallo', subject: 'Français', school: 'École des Étoiles', school_id: 2, email: 'mariama.diallo@etoiles.sn', phone: '77 222 22 22' },
+        { id: 3, first_name: 'Amadou', last_name: 'Sarr', subject: 'Anglais', school: 'Collège Moderne', school_id: 3, email: 'amadou.sarr@college.sn', phone: '76 333 33 33' },
+        { id: 4, first_name: 'Fatou', last_name: 'Diagne', subject: 'Sciences', school: 'Lycée International', school_id: 1, email: 'fatou.diagne@lycee.sn', phone: '77 444 44 44' },
+    ],
+
+    // Classes
+    classes: [
+        { id: 1, name: 'Terminale A', school_id: 1, level: 'Terminale', teacher_id: 1, student_count: 25 },
+        { id: 2, name: 'Seconde C', school_id: 2, level: 'Seconde', teacher_id: 2, student_count: 20 },
+        { id: 3, name: 'Première D', school_id: 3, level: 'Première', teacher_id: 3, student_count: 18 },
+        { id: 4, name: 'CM2', school_id: 4, level: 'CM2', teacher_id: 4, student_count: 15 },
+        { id: 5, name: 'Terminale C', school_id: 1, level: 'Terminale', teacher_id: 1, student_count: 22 },
+    ],
+
+    // Messages
+    messages: [
+        { id: 1, sender: 'Enseignant', sender_id: 1, receiver: 'Parent', receiver_id: 1, subject: 'Progrès de l\'élève', content: 'Votre enfant a fait de bons progrès ce trimestre.', date: '2025-03-25', read: false },
+        { id: 2, sender: 'Parent', sender_id: 1, receiver: 'Enseignant', receiver_id: 1, subject: 'Réunion', content: 'Je confirme ma présence à la réunion de demain.', date: '2025-03-24', read: true },
+        { id: 3, sender: 'Administration', sender_id: 0, receiver: 'Tous', receiver_id: 0, subject: 'Information importante', content: 'Les inscriptions pour la rentrée prochaine sont ouvertes.', date: '2025-03-23', read: false },
+    ],
+
+    // Notifications
+    notifications: [
+        { id: 1, text: '<strong>Marie Ndiaye</strong> a effectué un paiement de 50 000 FCFA', time: 'Il y a 5 min', read: false },
+        { id: 2, text: '<strong>Jean Dupont</strong> a demandé un reçu pour le paiement #INV-002', time: 'Il y a 15 min', read: false },
+        { id: 3, text: 'Nouvelle école <strong>Institut Polytechnique</strong> a rejoint la plateforme', time: 'Il y a 2h', read: true },
+    ],
+};
+
+// ============================================================
+// 2. ÉTAT GLOBAL
+// ============================================================
+let currentUser = null;
+let currentPage = 'dashboard';
+let userRole = 'admin';
+let userSchoolId = null;
+let modalCallback = null;
+
+// ============================================================
+// 3. FONCTIONS D'AUTHENTIFICATION
+// ============================================================
+
+function selectRole(role) {
+    document.querySelectorAll('.role-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.role === role);
+    });
+
+    document.getElementById('adminTeacherFields').style.display = 'none';
+    document.getElementById('schoolFields').style.display = 'none';
+    document.getElementById('parentFields').style.display = 'none';
+
+    const btn = document.getElementById('loginBtn');
+    if (role === 'admin' || role === 'teacher') {
+        document.getElementById('adminTeacherFields').style.display = 'block';
+        btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i> Se connecter';
+        document.getElementById('loginEmail').value = role === 'admin' ? 'admin@edugest.com' : 'prof@edugest.com';
+        document.getElementById('loginPassword').value = 'password123';
+    } else if (role === 'school') {
+        document.getElementById('schoolFields').style.display = 'block';
+        btn.innerHTML = '<i class="bi bi-building me-2"></i> Accéder à mon école';
+    } else if (role === 'parent') {
+        document.getElementById('parentFields').style.display = 'block';
+        btn.innerHTML = '<i class="bi bi-person-heart me-2"></i> Accéder à mon espace parent';
+    }
 }
 
-/* ==================== ELEVES & CARTES ==================== */
-function renderEleves(){
-  const sid=CU.schoolId;
-  const students=getSchoolStudents(sid);
-  const canManage=CU.role==='prefet'||CU.role==='enseignant';
-  return `<div class="ptitle">Gestion des Eleves</div><div class="psub">${students.length} eleves inscrits</div>
-  <div class="tab-bar no-print">
-    <button class="tab-btn act" onclick="switchElTab(this,'el-list')">Liste</button>
-    <button class="tab-btn" onclick="switchElTab(this,'el-cards')">Cartes d'identite</button>
-  </div>
-  <div id="el-list">
-    <div style="display:flex;gap:8px;margin-bottom:14px" class="no-print">
-      <input type="text" placeholder="Rechercher un eleve..." oninput="filterStudents(this.value)" style="flex:1;padding:9px 14px;border:2px solid var(--brd);border-radius:10px;font-size:12px;background:var(--bg)">
-      ${canManage?`<button class="btn btn-s btn-p" onclick="showAddStudent()"><i class="fas fa-plus"></i> Ajouter</button>`:''}
-    </div>
-    <div class="card"><div class="tw"><table id="el-table">
-      <thead><tr><th>Matricule</th><th>Nom</th><th>Classe</th><th>Points</th><th>Paiement</th><th>Actions</th></tr></thead>
-      <tbody>${students.map(s=>{
-        const pts=DB.get('points').filter(p=>p.studentId===s.id).reduce((a,p)=>a+p.value,0);
-        const pays=DB.get('payments').filter(p=>p.studentId===s.id);
-        const lastPay=pays[pays.length-1];
-        const payBadge=lastPay?(lastPay.status==='paid'?'<span class="badge bg-ok">Paye</span>':lastPay.status==='partial'?'<span class="badge bg-w">Partiel</span>':'<span class="badge bg-d">Impaye</span>'):'<span class="badge bg-d">Aucun</span>';
-        return `<tr><td><strong>${s.matricule||'-'}</strong></td><td>${s.name}</td><td>${s.class||'-'}</td><td><strong style="color:${pts>=0?'var(--ok)':'var(--err)'}">${pts}</strong></td><td>${payBadge}</td><td class="no-print"><button class="btn btn-s btn-g" onclick="showStudentCard(${s.id})"><i class="fas fa-id-card"></i></button> ${canManage?`<button class="btn btn-s btn-g" onclick="editStudent(${s.id})"><i class="fas fa-pen"></i></button>`:''}</td></tr>`;
-      }).join('')}</tbody>
-    </table></div></div>
-  </div>
-  <div id="el-cards" class="hidden">
-    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">${students.map(s=>renderIDCard(s)).join('')}</div>
-  </div>`;
-}
-function renderIDCard(s){
-  const school=getSchool(s.schoolId);
-  return `<div class="id-card" id="card-${s.id}">
-    <div class="id-badge">ELEVE</div>
-    <div class="id-photo"><i class="fas fa-user"></i></div>
-    <div class="id-info">
-      <h4>${s.name.toUpperCase()}</h4>
-      <p><i class="fas fa-hashtag"></i> ${s.matricule||'N/A'}</p>
-      <p><i class="fas fa-calendar"></i> ${s.dob?fmtDate(s.dob):'N/A'}</p>
-      <p><i class="fas fa-chalkboard"></i> ${s.class||'N/A'}</p>
-      <p><i class="fas fa-phone"></i> ${s.phone||'N/A'}</p>
-    </div>
-    <div class="id-school">${school?school.name.toUpperCase():''}<br>Annee 2025-2026</div>
-  </div>`;
-}
-function showStudentCard(id){
-  const s=getUser(id);if(!s)return;
-  const school=getSchool(s.schoolId);
-  showModal('Carte d\'identite - '+s.name,`
-    <div style="display:flex;justify-content:center;margin-bottom:16px">${renderIDCard(s)}</div>
-    <div style="display:flex;gap:8px;justify-content:center" class="no-print">
-      <button class="btn btn-s btn-p" onclick="printCard(${s.id})"><i class="fas fa-print"></i> Imprimer</button>
-      <button class="btn btn-s btn-g" onclick="uploadStudentPhoto(${s.id})"><i class="fas fa-camera"></i> Photo</button>
-    </div>
-  `);
-}
-function printCard(id){
-  const card=document.getElementById('card-'+id);if(!card)return;
-  const w=window.open('','','width=400,height=300');
-  w.document.write(`<html><head><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Outfit,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh}${document.querySelector('style').textContent}</style></head><body>${card.outerHTML}</body></html>`);
-  w.document.close();w.print();
-}
-function uploadStudentPhoto(id){
-  IMG_CB=function(base64){
-    DB.upd('users',id,{photo:base64});
-    const card=document.getElementById('card-'+id);
-    if(card){const ph=card.querySelector('.id-photo');ph.innerHTML=`<img src="${base64}" alt="photo">`}
-    toast('Photo mise a jour');
-  };
-  document.getElementById('img-input').click();
-}
-function showAddStudent(){
-  showModal('Ajouter un eleve',`
-    <div class="fg"><label>Nom complet</label><input id="ns-name" required></div>
-    <div class="fg"><label>Date de naissance</label><input type="date" id="ns-dob"></div>
-    <div class="fg"><label>Classe</label><input id="ns-class" placeholder="Ex: 6eme A"></div>
-    <div class="fg"><label>Telephone</label><input type="tel" id="ns-phone"></div>
-    <div class="fg"><label>Parent (optionnel)</label><select id="ns-parent"><option value="">Aucun</option>${DB.get('users').filter(u=>u.schoolId===CU.schoolId&&u.role==='parent').map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Annuler</button><button class="btn btn-p" onclick="addStudent()">Ajouter</button>`);
-}
-function addStudent(){
-  const name=document.getElementById('ns-name').value.trim();if(!name){toast('Nom requis','er');return}
-  const school=getSchool(CU.schoolId);
-  const mat=school?school.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)+'-'+new Date().getFullYear()+'-'+String(DB.get('users').filter(u=>u.role==='eleve'&&u.schoolId===CU.schoolId).length+1).padStart(3,'0'):'XX';
-  DB.add('users',{name,dob:document.getElementById('ns-dob').value,class:document.getElementById('ns-class').value.trim(),phone:document.getElementById('ns-phone').value.trim(),role:'eleve',schoolId:CU.schoolId,active:true,matricule:mat,parentId:document.getElementById('ns-parent').value?parseInt(document.getElementById('ns-parent').value):null});
-  hideModal();toast('Eleve ajoute');renderPage();
-}
-function editStudent(id){
-  const s=getUser(id);if(!s)return;
-  showModal('Modifier l\'eleve',`
-    <div class="fg"><label>Nom complet</label><input id="es-name" value="${s.name}"></div>
-    <div class="fg"><label>Date de naissance</label><input type="date" id="es-dob" value="${s.dob||''}"></div>
-    <div class="fg"><label>Classe</label><input id="es-class" value="${s.class||''}"></div>
-    <div class="fg"><label>Telephone</label><input type="tel" id="es-phone" value="${s.phone||''}"></div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Annuler</button><button class="btn btn-p" onclick="saveStudent(${id})">Enregistrer</button>`);
-}
-function saveStudent(id){
-  DB.upd('users',id,{name:document.getElementById('es-name').value.trim(),dob:document.getElementById('es-dob').value,class:document.getElementById('es-class').value.trim(),phone:document.getElementById('es-phone').value.trim()});
-  hideModal();toast('Eleve mis a jour');renderPage();
-}
-function switchElTab(btn,tabId){
-  btn.parentElement.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('act'));btn.classList.add('act');
-  document.getElementById('el-list').classList.toggle('hidden',tabId!=='el-list');
-  document.getElementById('el-cards').classList.toggle('hidden',tabId!=='el-cards');
-}
-function filterStudents(q){
-  const rows=document.querySelectorAll('#el-table tbody tr');
-  rows.forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none'});
+function handleLogin(e) {
+    e.preventDefault();
+    const role = document.querySelector('.role-btn.active')?.dataset.role || 'admin';
+    const errorEl = document.getElementById('loginError');
+    errorEl.style.display = 'none';
+
+    if (role === 'admin') {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        if (email === 'admin@edugest.com' && password === 'password123') {
+            userRole = 'admin';
+            userSchoolId = null;
+            initApp('Administrateur', 'Admin', 'A', '#4F46E5');
+            showToast('Bienvenue Admin !', 'success');
+        } else {
+            errorEl.textContent = 'Identifiants administrateur incorrects';
+            errorEl.style.display = 'block';
+        }
+    } else if (role === 'teacher') {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        if (email === 'prof@edugest.com' && password === 'password123') {
+            userRole = 'teacher';
+            userSchoolId = null;
+            initApp('Enseignant', 'Prof.', 'P', '#3B82F6');
+            showToast('Bienvenue Professeur !', 'success');
+        } else {
+            errorEl.textContent = 'Identifiants enseignant incorrects';
+            errorEl.style.display = 'block';
+        }
+    } else if (role === 'school') {
+        const code = document.getElementById('schoolCode').value.toUpperCase().trim();
+        const password = document.getElementById('schoolPassword').value;
+        const account = DB.schoolAccounts.find(s => s.code === code);
+        if (account && account.password === password) {
+            const school = DB.schools.find(s => s.id === account.school_id);
+            if (school) {
+                userRole = 'school';
+                userSchoolId = school.id;
+                initApp(school.name, school.code, school.name.charAt(0), '#10B981');
+                showToast(`Bienvenue à ${school.name} !`, 'success');
+            }
+        } else {
+            errorEl.textContent = 'Code école ou mot de passe incorrect';
+            errorEl.style.display = 'block';
+        }
+    } else if (role === 'parent') {
+        const code = document.getElementById('parentCode').value.toUpperCase().trim();
+        const password = document.getElementById('parentPassword').value;
+        const account = DB.parentAccounts.find(p => p.code === code);
+        if (account && account.password === password) {
+            userRole = 'parent';
+            userSchoolId = null;
+            currentUser = account;
+            initApp(account.name, 'Parent', account.name.charAt(0), '#EC4899');
+            showToast(`Bienvenue ${account.name} !`, 'pink');
+        } else {
+            errorEl.textContent = 'Code parent ou mot de passe incorrect';
+            errorEl.style.display = 'block';
+        }
+    }
 }
 
-/* ==================== RAPPORTS & DEPOTS ==================== */
-function renderRapports(){
-  const sid=CU.schoolId;
-  let reports=DB.get('reports').filter(r=>r.schoolId===sid);
-  const statusLabels={brouillon:'Brouillon',depose_prefet:'Depose au Prefet',recu_prefet:'Recu par Prefet',depose_coord:'Depose a la Coordination',recu_coord:'Recu par Coordination',valide:'Valide',rejete:'Rejete'};
-  const statusClass={brouillon:'bg-w',depose_prefet:'bg-i',recu_prefet:'bg-a',depose_coord:'bg-i',recu_coord:'bg-a',valide:'bg-ok',rejete:'bg-d'};
-  const typeLabels={pedagogique:'Pedagogique',discipline:'Discipline',financier:'Financier',activite:'Activite'};
-
-  // Filtrer selon le role
-  if(CU.role==='enseignant')reports=reports.filter(r=>r.authorId===CU.id);
-  if(CU.role==='prefet')reports=reports.filter(r=>r.authorId===CU.id||r.toId===CU.id);
-  if(CU.role==='coordinateur')reports=reports.filter(r=>r.toId===CU.id||r.status==='depose_coord'||r.status==='recu_coord');
-
-  const canCreate=CU.role==='enseignant'||CU.role==='prefet';
-  const canReceive=CU.role==='prefet'||CU.role==='coordinateur';
-
-  return `<div class="ptitle">Rapports & Depots</div><div class="psub">Gestion et depot de rapports scolaires</div>
-  <div style="display:flex;gap:8px;margin-bottom:14px">
-    ${canCreate?`<button class="btn btn-s btn-p" onclick="showNewReport()"><i class="fas fa-plus"></i> Nouveau rapport</button>`:''}
-    ${canReceive?`<button class="btn btn-s btn-a" onclick="showGenReport()"><i class="fas fa-wand-magic-sparkles"></i> Generer un rapport</button>`:''}
-  </div>
-  <div class="card"><div class="tw"><table>
-    <thead><tr><th>Type</th><th>Titre</th><th>Auteur</th><th>Statut</th><th>Date</th><th>Actions</th></tr></thead>
-    <tbody>${reports.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(r=>{
-      const author=getUser(r.authorId);
-      let actions=`<button class="btn btn-s btn-g" onclick="viewReport(${r.id})"><i class="fas fa-eye"></i></button>`;
-      if(CU.role==='prefet'&&r.toId===CU.id&&r.status==='depose_prefet')actions+=` <button class="btn btn-s btn-p" onclick="receiveReport(${r.id})"><i class="fas fa-check"></i> Recevoir</button>`;
-      if(CU.role==='prefet'&&r.status==='recu_prefet')actions+=` <button class="btn btn-s btn-a" onclick="forwardReport(${r.id})"><i class="fas fa-upload"></i> Deposer a la Coord.</button>`;
-      if(CU.role==='prefet'&&r.status==='recu_prefet')actions+=` <button class="btn btn-s btn-d" onclick="rejectReport(${r.id})"><i class="fas fa-times"></i></button>`;
-      if(CU.role==='coordinateur'&&r.toId===CU.id&&r.status==='depose_coord')actions+=` <button class="btn btn-s btn-p" onclick="receiveReport(${r.id})"><i class="fas fa-check"></i> Recevoir</button>`;
-      if(CU.role==='coordinateur'&&r.status==='recu_coord')actions+=` <button class="btn btn-s btn-p" onclick="validateReport(${r.id})"><i class="fas fa-check-double"></i> Valider</button>`;
-      if(r.status==='brouillon'&&r.authorId===CU.id)actions+=` <button class="btn btn-s btn-a" onclick="depositReport(${r.id})"><i class="fas fa-upload"></i> Deposer</button> <button class="btn btn-s btn-d" onclick="DB.rm('reports',${r.id});renderPage();toast('Supprime')"><i class="fas fa-trash"></i></button>`;
-      return `<tr><td><span class="badge bg-i">${typeLabels[r.type]||r.type}</span></td><td><strong>${r.title}</strong></td><td>${author?author.name:'-'}</td><td><span class="badge ${statusClass[r.status]||'bg-w'}">${statusLabels[r.status]||r.status}</span></td><td>${fmtDate(r.createdAt)}</td><td>${actions}</td></tr>`;
-    }).join('')||'<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--mut)">Aucun rapport</td></tr>'}</tbody>
-  </table></div></div>`;
-}
-function showNewReport(){
-  showModal('Nouveau rapport',`
-    <div class="fg"><label>Type de rapport</label><select id="nr-type"><option value="pedagogique">Pedagogique</option><option value="discipline">Discipline</option><option value="activite">Activite</option><option value="financier">Financier</option></select></div>
-    <div class="fg"><label>Titre</label><input id="nr-title" required></div>
-    <div class="fg"><label>Contenu</label><textarea id="nr-content" rows="6" placeholder="Redigez votre rapport ici..."></textarea></div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Annuler</button><button class="btn btn-p" onclick="saveNewReport()">Enregistrer</button>`);
-}
-function saveNewReport(){
-  const title=document.getElementById('nr-title').value.trim();if(!title){toast('Titre requis','er');return}
-  const type=document.getElementById('nr-type').value;
-  const content=document.getElementById('nr-content').value;
-  let toId=null;
-  if(CU.role==='enseignant'){const prefet=DB.get('users').find(u=>u.schoolId===CU.schoolId&&u.role==='prefet');toId=prefet?prefet.id:null}
-  DB.add('reports',{type,title,content,authorId:CU.id,schoolId:CU.schoolId,status:'brouillon',toId,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});
-  hideModal();toast('Rapport cree');renderPage();
-}
-function depositReport(id){
-  const r=DB.find('reports',id);if(!r)return;
-  if(CU.role==='enseignant'){const prefet=DB.get('users').find(u=>u.schoolId===CU.schoolId&&u.role==='prefet');DB.upd('reports',id,{status:'depose_prefet',toId:prefet?prefet.id:null,updatedAt:new Date().toISOString()});if(prefet)DB.add('notifications',{userId:prefet.id,text:`Nouveau rapport de ${CU.name}: ${r.title}`,read:false,ts:new Date().toISOString(),type:'report'})}
-  hideModal();toast('Rapport depose');renderPage();updateNotifBadge();
-}
-function receiveReport(id){
-  const r=DB.find('reports',id);if(!r)return;
-  const newStatus=r.status==='depose_prefet'?'recu_prefet':'recu_coord';
-  DB.upd('reports',id,{status:newStatus,updatedAt:new Date().toISOString()});
-  toast('Rapport recu');renderPage();
-}
-function forwardReport(id){
-  const coord=DB.get('users').find(u=>u.schoolId===CU.schoolId&&u.role==='coordinateur');
-  if(!coord){toast('Aucun coordinateur trouve','er');return}
-  DB.upd('reports',id,{status:'depose_coord',toId:coord.id,updatedAt:new Date().toISOString()});
-  DB.add('notifications',{userId:coord.id,text:`Rapport recu du prefet ${CU.name}: ${DB.find('reports',id).title}`,read:false,ts:new Date().toISOString(),type:'report'});
-  toast('Rapport depose a la coordination');renderPage();updateNotifBadge();
-}
-function rejectReport(id){DB.upd('reports',id,{status:'rejete',updatedAt:new Date().toISOString()});toast('Rapport rejete','wa');renderPage()}
-function validateReport(id){DB.upd('reports',id,{status:'valide',updatedAt:new Date().toISOString()});toast('Rapport valide');renderPage()}
-function viewReport(id){
-  const r=DB.find('reports',id);if(!r)return;
-  const author=getUser(r.authorId);
-  const statusLabels={brouillon:'Brouillon',depose_prefet:'Depose au Prefet',recu_prefet:'Recu par Prefet',depose_coord:'Depose a la Coordination',recu_coord:'Recu par Coordination',valide:'Valide',rejete:'Rejete'};
-  showModal(r.title,`
-    <div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap">
-      <span class="badge bg-i">${r.type}</span>
-      <span class="badge bg-a">${statusLabels[r.status]}</span>
-    </div>
-    <p style="font-size:12px;color:var(--mut);margin-bottom:12px">Auteur: ${author?author.name:'-'} | Cree: ${fmtDate(r.createdAt)} | Modifie: ${fmtDate(r.updatedAt)}</p>
-    <div style="background:var(--bg);padding:16px;border-radius:10px;font-size:13px;line-height:1.7;white-space:pre-wrap">${r.content||'Aucun contenu'}</div>
-  `);
-}
-function showGenReport(){
-  const sid=CU.schoolId;
-  const students=getSchoolStudents(sid);
-  const teachers=getSchoolTeachers(sid);
-  const payments=DB.get('payments').filter(p=>p.schoolId===sid);
-  const pts=DB.get('points').filter(p=>students.some(s=>s.id===p.studentId));
-  const totalPaid=payments.reduce((s,p)=>s+p.paid,0);
-  const totalDue=payments.reduce((s,p)=>s+p.amount,0);
-  const avgPts=students.length?(pts.reduce((s,p)=>s+p.value,0)/students.length).toFixed(1):0;
-
-  let reportContent=`RAPPORT GENERE AUTOMATIQUEMENT\nEtablissement: ${getSchool(sid)?.name}\nDate: ${fmtDate(new Date())}\n${'='.repeat(50)}\n\n`;
-  reportContent+=`EFFECTIFS:\n- Eleves: ${students.length}\n- Enseignants: ${teachers.length}\n\n`;
-  reportContent+=`PAIEMENTS:\n- Total du: ${fmtMoney(totalDue)}\n- Total paye: ${fmtMoney(totalPaid)}\n- Taux de recouvrement: ${totalDue?((totalPaid/totalDue)*100).toFixed(1):0}%\n\n`;
-  reportContent+=`POINTS (moyenne): ${avgPts}\n`;
-  reportContent+=`- Comportement: ${pts.filter(p=>p.category==='comportement').reduce((s,p)=>s+p.value,0)}\n`;
-  reportContent+=`- Participation: ${pts.filter(p=>p.category==='participation').reduce((s,p)=>s+p.value,0)}\n`;
-  reportContent+=`- Devoirs: ${pts.filter(p=>p.category==='devoir').reduce((s,p)=>s+p.value,0)}\n`;
-  reportContent+=`- Examens: ${pts.filter(p=>p.category==='examen').reduce((s,p)=>s+p.value,0)}\n`;
-
-  showModal('Generer un rapport automatique',`
-    <div class="fg"><label>Type</label><select id="gr-type"><option value="pedagogique">Pedagogique</option><option value="financier">Financier</option><option value="activite">Activite</option></select></div>
-    <div class="fg"><label>Titre</label><input id="gr-title" value="Rapport synthetique - ${fmtDate(new Date())}"></div>
-    <div class="fg"><label>Apercu du contenu</label><textarea id="gr-content" rows="10" style="font-size:11px">${reportContent}</textarea></div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Annuler</button><button class="btn btn-p" onclick="saveGenReport()"><i class="fas fa-save"></i> Enregistrer</button> <button class="btn btn-a" onclick="printGenReport()"><i class="fas fa-print"></i> Imprimer</button>`);
-}
-function saveGenReport(){
-  const title=document.getElementById('gr-title').value.trim();if(!title){toast('Titre requis','er');return}
-  const type=document.getElementById('gr-type').value;
-  const content=document.getElementById('gr-content').value;
-  let toId=null;
-  if(CU.role==='prefet'){const coord=DB.get('users').find(u=>u.schoolId===CU.schoolId&&u.role==='coordinateur');toId=coord?coord.id:null}
-  DB.add('reports',{type,title,content,authorId:CU.id,schoolId:CU.schoolId,status:toId?'depose_coord':'brouillon',toId,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});
-  if(toId)DB.add('notifications',{userId:toId,text:`Rapport de ${CU.name}: ${title}`,read:false,ts:new Date().toISOString(),type:'report'});
-  hideModal();toast('Rapport genere et enregistre');renderPage();updateNotifBadge();
-}
-function printGenReport(){const c=document.getElementById('gr-content').value;const w=window.open('','','width=600');w.document.write(`<pre style="font-family:monospace;font-size:12px;padding:20px">${c}</pre>`);w.document.close();w.print()}
-
-/* ==================== COMMUNICATIONS ==================== */
-function renderCommunications(){
-  const sid=CU.schoolId;
-  let comms=DB.get('communications').filter(c=>c.scope==='ecole'&&c.schoolId===sid);
-  if(CU.role==='coordinateur')comms=DB.get('communications').filter(c=>c.scope==='prefets'||(c.scope==='ecole'&&c.schoolId===sid));
-  if(CU.role==='prefet')comms=DB.get('communications').filter(c=>c.scope==='ecole'&&c.schoolId===sid);
-
-  const canCreate=CU.role==='coordinateur'||CU.role==='prefet';
-  const priorityLabels={haute:'Haute priorite',moyenne:'Moyenne',basse:'Basse'};
-  const priorityClass={haute:'bg-d',moyenne:'bg-w',basse:'bg-ok'};
-
-  return `<div class="ptitle">Communications Scolaires</div><div class="psub">${CU.role==='coordinateur'?'Communications de la coordination vers les etablissements':'Communications de votre etablissement'}</div>
-  ${canCreate?`<div style="margin-bottom:14px"><button class="btn btn-s btn-p" onclick="showNewComm()"><i class="fas fa-plus"></i> Nouvelle communication</button></div>`:''}
-  ${comms.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(c=>{
-    const author=getUser(c.authorId);
-    return `<div class="comm-card">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <span class="badge ${priorityClass[c.priority]||'bg-w'}">${priorityLabels[c.priority]||c.priority}</span>
-        ${c.scope==='prefets'?'<span class="badge bg-i">Coordination → Prefets</span>':'<span class="badge bg-ok">Etablissement</span>'}
-      </div>
-      <h4>${c.title}</h4>
-      <p>${c.content}</p>
-      ${c.img?`<img src="${c.img}" alt="image">`:''}
-      <div class="comm-meta"><span><i class="fas fa-user"></i> ${author?author.name:'-'}</span><span><i class="fas fa-calendar"></i> ${fmtDate(c.createdAt)}</span></div>
-    </div>`;
-  }).join('')||'<div class="empty-s"><i class="fas fa-bullhorn"></i><p>Aucune communication</p></div>'}`;
-}
-function showNewComm(){
-  const scopeOpts=CU.role==='coordinateur'?`<option value="prefets">Vers les prefets</option><option value="ecole">Vers un etablissement</option>`:`<option value="ecole">Etablissement entier</option>`;
-  const schoolOpts=CU.role==='coordinateur'?DB.get('schools').map(s=>`<option value="${s.id}">${s.name}</option>`).join(''):'';
-  showModal('Nouvelle communication',`
-    <div class="fg"><label>Destinataires</label><select id="nc-scope" onchange="document.getElementById('nc-school-grp').classList.toggle('hidden',this.value!=='ecole')">${scopeOpts}</select></div>
-    <div class="fg" id="nc-school-grp" class="${CU.role!=='coordinateur'?'hidden':''}"><label>Etablissement</label><select id="nc-school">${schoolOpts||`<option value="${CU.schoolId}">${getSchool(CU.schoolId)?.name}</option>`}</select></div>
-    <div class="fg"><label>Priorite</label><select id="nc-prio"><option value="moyenne">Moyenne</option><option value="haute">Haute</option><option value="basse">Basse</option></select></div>
-    <div class="fg"><label>Titre</label><input id="nc-title" required></div>
-    <div class="fg"><label>Contenu</label><textarea id="nc-content" rows="5"></textarea></div>
-    <div class="fg"><label>Image (optionnel)</label><button class="btn btn-s btn-g" onclick="IMG_CB=function(b){document.getElementById('nc-img-prev').src=b;document.getElementById('nc-img-data').value=b};document.getElementById('img-input').click()"><i class="fas fa-image"></i> Ajouter une image</button><input type="hidden" id="nc-img-data"><img id="nc-img-prev" class="img-preview hidden"></div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Annuler</button><button class="btn btn-p" onclick="saveNewComm()">Publier</button>`);
-}
-function saveNewComm(){
-  const title=document.getElementById('nc-title').value.trim();if(!title){toast('Titre requis','er');return}
-  const scope=document.getElementById('nc-scope').value;
-  const schoolId=scope==='ecole'?(parseInt(document.getElementById('nc-school').value)||CU.schoolId):0;
-  const img=document.getElementById('nc-img-data').value||null;
-  DB.add('communications',{authorId:CU.id,schoolId,title,content:document.getElementById('nc-content').value,img,scope,priority:document.getElementById('nc-prio').value,createdAt:new Date().toISOString()});
-  // Notifier les utilisateurs concernes
-  if(scope==='prefets'){DB.get('users').filter(u=>u.role==='prefet').forEach(p=>DB.add('notifications',{userId:p.id,text:`Nouvelle communication de la coordination: ${title}`,read:false,ts:new Date().toISOString(),type:'info'}))}
-  else{getSchoolUsers(schoolId).filter(u=>u.id!==CU.id).forEach(u=>DB.add('notifications',{userId:u.id,text:`Nouvelle communication: ${title}`,read:false,ts:new Date().toISOString(),type:'info'}))}
-  hideModal();toast('Communication publiee');renderPage();updateNotifBadge();
-}
-
-/* ==================== MESSAGES ==================== */
-function renderMessages(){
-  const convos=getConversations();
-  return `<div class="ptitle">Messages</div><div class="psub">Echangez avec les membres de votre etablissement</div>
-  <div class="msg-lay">
-    <div class="ml">
-      <div class="ml-head"><input type="text" placeholder="Rechercher..." oninput="filterConvos(this.value)"></div>
-      <div id="msg-list">${convos.map(c=>{
-        const other=getUser(c.otherId);
-        if(!other)return '';
-        const lastMsg=c.lastMsg;
-        const unread=c.unread;
-        return `<div class="mli${SEL_CONV===c.otherId?' act':''}" onclick="openConv(${c.otherId})">
-          <div class="ma" style="background:${lastMsg&&lastMsg.from===CU.id?'var(--pm)':'var(--p)'}">${initials(other.name)}</div>
-          <div style="flex:1;min-width:0"><div class="mn">${other.name} <span style="font-size:9px;color:var(--mut)">(${ROLES[other.role]})</span></div><div class="mp">${lastMsg?(lastMsg.img?'📷 Image':lastMsg.text):'Aucun message'}</div></div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span class="mt">${lastMsg?fmtTime(lastMsg.ts):''}</span>${unread?`<span style="width:8px;height:8px;border-radius:50%;background:var(--err)"></span>`:''}</div>
-        </div>`;
-      }).join('')||'<div class="empty-s" style="padding:20px"><i class="fas fa-comments"></i><p>Aucune conversation</p></div>'}</div>
-    </div>
-    <div class="mc">
-      ${SEL_CONV?`<div class="mc-h"><span>${getUser(SEL_CONV)?.name||''} (${ROLES[getUser(SEL_CONV)?.role]||''})</span></div>
-      <div class="mc-b" id="msg-bubbles">${renderMsgBubbles(SEL_CONV)}</div>
-      <div class="mc-i">
-        <button class="img-btn" onclick="IMG_CB=function(b){sendMsg(b)};document.getElementById('img-input').click()"><i class="fas fa-image"></i></button>
-        <input type="text" id="msg-input" placeholder="Ecrivez un message..." onkeydown="if(event.key==='Enter')sendMsg()">
-        <button class="send-btn" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
-      </div>`:'<div class="empty-s" style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center"><i class="fas fa-comments"></i><p>Selectionnez une conversation</p></div>'}
-    </div>
-  </div>`;
-}
-function getConversations(){
-  const msgs=DB.get('messages').filter(m=>m.from===CU.id||m.to===CU.id);
-  const otherIds=[...new Set(msgs.map(m=>m.from===CU.id?m.to:m.from))];
-  // Ajouter les utilisateurs de l'etablissement
-  const schoolUsers=getSchoolUsers(CU.schoolId).filter(u=>u.id!==CU.id);
-  const allIds=[...new Set([...otherIds,...schoolUsers.map(u=>u.id)])];
-  return allIds.map(oid=>{
-    const convMsgs=msgs.filter(m=>(m.from===CU.id&&m.to===oid)||(m.from===oid&&m.to===CU.id)).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
-    return {otherId:oid,lastMsg:convMsgs[0]||null,unread:convMsgs.filter(m=>m.to===CU.id&&!m.read).length};
-  }).filter(c=>getUser(c.otherId)).sort((a,b)=>(b.lastMsg?new Date(b.lastMsg.ts):0)-(a.lastMsg?new Date(a.lastMsg.ts):0));
-}
-function openConv(oid){
-  SEL_CONV=oid;
-  // Marquer comme lu
-  DB.get('messages').filter(m=>m.from===oid&&m.to===CU.id&&!m.read).forEach(m=>DB.upd('messages',m.id,{read:true}));
-  buildNav();renderPage();
-  setTimeout(()=>{const b=document.getElementById('msg-bubbles');if(b)b.scrollTop=b.scrollHeight},50);
-}
-function renderMsgBubbles(oid){
-  const msgs=DB.get('messages').filter(m=>(m.from===CU.id&&m.to===oid)||(m.from===oid&&m.to===CU.id)).sort((a,b)=>new Date(a.ts)-new Date(b.ts));
-  return msgs.map(m=>`<div class="mbub ${m.from===CU.id?'s':'r'}">
-    ${m.text}
-    ${m.img?`<img src="${m.img}" alt="image">`:''}
-    <div class="bt">${fmtTime(m.ts)}</div>
-  </div>`).join('');
-}
-function sendMsg(img){
-  if(!SEL_CONV)return;
-  const input=document.getElementById('msg-input');
-  const text=img?'':input.value.trim();
-  if(!text&&!img)return;
-  DB.add('messages',{from:CU.id,to:SEL_CONV,text,ts:new Date().toISOString(),read:false,img:img||null});
-  DB.add('notifications',{userId:SEL_CONV,text:`Nouveau message de ${CU.name}`,read:false,ts:new Date().toISOString(),type:'message'});
-  if(input)input.value='';
-  renderPage();
-  setTimeout(()=>{const b=document.getElementById('msg-bubbles');if(b)b.scrollTop=b.scrollHeight},50);
-  updateNotifBadge();
-}
-function initMsgList(){}
-function filterConvos(q){
-  document.querySelectorAll('.mli').forEach(el=>{el.style.display=el.textContent.toLowerCase().includes(q.toLowerCase())?'':'none'});
-}
-function getMessageUnreadCount(){return DB.get('messages').filter(m=>m.to===CU.id&&!m.read).length}
-
-/* ==================== PAIEMENTS MOBILE MONEY ==================== */
-function renderPaiements(){
-  const sid=CU.schoolId;
-  let payments=DB.get('payments').filter(p=>p.schoolId===sid);
-  if(CU.role==='eleve')payments=payments.filter(p=>p.studentId===CU.id);
-  if(CU.role==='parent')payments=payments.filter(p=>p.studentId===CU.childId);
-  const students=getSchoolStudents(sid);
-  const totalPaid=payments.reduce((s,p)=>s+p.paid,0);
-  const totalDue=payments.reduce((s,p)=>s+p.amount,0);
-  const canPay=CU.role==='prefet'||CU.role==='parent';
-
-  return `<div class="ptitle">Paiements Scolaires</div><div class="psub">${fmtMoney(totalPaid)} payes sur ${fmtMoney(totalDue)} du</div>
-  ${canPay?`<div style="margin-bottom:14px"><button class="btn btn-s btn-p" onclick="showNewPayment()"><i class="fas fa-plus"></i> Nouveau paiement</button></div>`:''}
-  <div class="card"><div class="tw"><table>
-    <thead><tr><th>Eleve</th><th>Trimestre</th><th>Montant</th><th>Paye</th><th>Statut</th><th>Mode</th><th>Recu</th><th>Actions</th></tr></thead>
-    <tbody>${payments.sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)).map(p=>{
-      const stu=getUser(p.studentId);
-      const statusBadge=p.status==='paid'?'<span class="badge bg-ok">Paye</span>':p.status==='partial'?'<span class="badge bg-w">Partiel</span>':'<span class="badge bg-d">Impaye</span>';
-      const op=OPS.find(o=>o.id===p.method);
-      return `<tr><td>${stu?stu.name:'-'}</td><td>${p.term}</td><td>${fmtMoney(p.amount)}</td><td><strong>${fmtMoney(p.paid)}</strong></td><td>${statusBadge}</td><td>${op?`<span style="color:${op.color};font-weight:600">${op.name}</span>`:'-'}</td><td>${p.receiptNo||'-'}</td><td>${p.receiptNo?`<button class="btn btn-s btn-g" onclick="showReceipt(${p.id})"><i class="fas fa-receipt"></i></button>`:''}</td></tr>`;
-    }).join('')||'<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--mut)">Aucun paiement</td></tr>'}</tbody>
-  </table></div></div>`;
-}
-function showNewPayment(){
-  const sid=CU.schoolId;
-  const students=getSchoolStudents(sid);
-  const studentOpts=CU.role==='parent'?`<option value="${CU.childId}">${getUser(CU.childId)?.name||'Mon enfant'}</option>`:students.map(s=>`<option value="${s.id}">${s.name} (${s.matricule||''})</option>`).join('');
-  showModal('Nouveau paiement',`
-    <div class="fg"><label>Eleve</label><select id="np-student">${studentOpts}</select></div>
-    <div class="fg"><label>Trimestre</label><select id="np-term"><option value="T1 2025">T1 2025</option><option value="T2 2025">T2 2025</option><option value="T3 2025">T3 2025</option></select></div>
-    <div class="fg"><label>Montant a payer (CDF)</label><input type="number" id="np-amount" value="50000"></div>
-    <div class="fg"><label>Montant paye (CDF)</label><input type="number" id="np-paid" value="50000"></div>
-    <div class="fg"><label>Mode de paiement</label>
-      <div class="ops-grid" id="np-ops">
-        ${OPS.map((o,i)=>`<div class="op-card${i===0?' sel':''}" onclick="selectOp('${o.id}',this)"><div class="op-logo" style="color:${o.color}"><i class="fas ${o.icon}"></i></div><div class="op-name">${o.name}</div></div>`).join('')}
-        <div class="op-card" onclick="selectOp('carte',this)"><div class="op-logo" style="color:var(--p)"><i class="fas fa-credit-card"></i></div><div class="op-name">Carte bancaire</div></div>
-      </div>
-      <input type="hidden" id="np-method" value="airtel">
-    </div>
-    <div class="fg" id="np-phone-grp"><label>Numero de telephone</label><input type="tel" id="np-phone" placeholder="+243 ..."></div>
-    <div class="fg hidden" id="np-card-grp"><label>Numero de carte</label><input type="text" id="np-card" placeholder="XXXX XXXX XXXX XXXX" maxlength="19"></div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Annuler</button><button class="btn btn-p" onclick="processPayment()"><i class="fas fa-check"></i> Confirmer le paiement</button>`);
-}
-let SEL_OP='airtel';
-function selectOp(id,el){
-  SEL_OP=id;
-  document.querySelectorAll('#np-ops .op-card').forEach(c=>c.classList.remove('sel'));
-  el.classList.add('sel');
-  document.getElementById('np-method').value=id;
-  document.getElementById('np-phone-grp').classList.toggle('hidden',id==='carte');
-  document.getElementById('np-card-grp').classList.toggle('hidden',id!=='carte');
-}
-function processPayment(){
-  const studentId=parseInt(document.getElementById('np-student').value);
-  const amount=parseInt(document.getElementById('np-amount').value)||0;
-  const paid=parseInt(document.getElementById('np-paid').value)||0;
-  if(paid<=0){toast('Montant invalide','er');return}
-  const method=document.getElementById('np-method').value;
-  const phone=method!=='carte'?document.getElementById('np-phone').value.trim():'';
-  const ref=genRef();
-  const receiptNo=genReceiptNo(CU.schoolId);
-  const status=paid>=amount?'paid':paid>0?'partial':'unpaid';
-  DB.add('payments',{schoolId:CU.schoolId,studentId,amount,paid,status,term:document.getElementById('np-term').value,method,phone,ref,date:new Date().toISOString(),receiptNo});
-  // Notifier
-  const stu=getUser(studentId);
-  if(stu)DB.add('notifications',{userId:studentId,text:`Paiement de ${fmtMoney(paid)} enregistre pour ${document.getElementById('np-term').value}`,read:false,ts:new Date().toISOString(),type:'payment'});
-  if(stu&&stu.parentId)DB.add('notifications',{userId:stu.parentId,text:`Paiement de ${fmtMoney(paid)} pour ${stu.name}`,read:false,ts:new Date().toISOString(),type:'payment'});
-  hideModal();toast('Paiement enregistre avec succes');
-  // Afficher le recu
-  const payId=DB.get('payments').find(p=>p.ref===ref);
-  if(payId)showReceipt(payId.id);
-  renderPage();updateNotifBadge();
-}
-function showReceipt(id){
-  const p=DB.find('payments',id);if(!p)return;
-  const stu=getUser(p.studentId);
-  const school=getSchool(p.schoolId);
-  const op=OPS.find(o=>o.id===p.method);
-  showModal('Recu de paiement',`
-    <div style="display:flex;justify-content:center">
-      <div class="receipt">
-        <h3><i class="fas fa-graduation-cap"></i> ${school?school.name:'Etablissement'}</h3>
-        <div class="r-sub">${school?school.address:''}</div>
-        <hr>
-        <div style="font-size:14px;font-weight:700;margin:8px 0">RECU DE PAIEMENT</div>
-        <div class="r-row"><span>Numero de recu</span><strong>${p.receiptNo}</strong></div>
-        <div class="r-row"><span>Date</span><span>${fmtDate(p.date)}</span></div>
-        <div class="r-row"><span>Eleve</span><strong>${stu?stu.name:'-'}</strong></div>
-        <div class="r-row"><span>Matricule</span><span>${stu?stu.matricule:'-'}</span></div>
-        <div class="r-row"><span>Trimestre</span><span>${p.term}</span></div>
-        <hr>
-        <div class="r-row"><span>Montant du</span><span>${fmtMoney(p.amount)}</span></div>
-        <div class="r-row"><span>Montant paye</span><span>${fmtMoney(p.paid)}</span></div>
-        <div class="r-row"><span>Reste</span><span>${fmtMoney(p.amount-p.paid)}</span></div>
-        <hr>
-        <div class="r-total">${fmtMoney(p.paid)}</div>
-        ${op?`<div class="r-ops" style="color:${op.color}"><i class="fas ${op.icon}"></i> ${op.name}</div>`:''}
-        <div style="font-size:10px;color:var(--mut);margin-top:12px">Ref: ${p.ref}</div>
-      </div>
-    </div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Fermer</button><button class="btn btn-p" onclick="printReceipt(${id})"><i class="fas fa-print"></i> Imprimer</button>`);
-}
-function printReceipt(id){
-  const p=DB.find('payments',id);if(!p)return;
-  const stu=getUser(p.studentId);const school=getSchool(p.schoolId);const op=OPS.find(o=>o.id===p.method);
-  const w=window.open('','','width=400');w.document.write(`<html><head><title>Recu</title><style>body{font-family:sans-serif;padding:20px;text-align:center}h3{color:#1B4332}hr{border:none;border-top:1px dashed #ccc;margin:12px 0}.r{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}.total{font-size:20px;font-weight:800;color:#1B4332;margin:8px 0}</style></head><body>
-  <h3>${school?school.name:''}</h3><p style="font-size:11px;color:#666">${school?school.address:''}</p><hr>
-  <p style="font-weight:700">RECU DE PAIEMENT</p>
-  <div class="r"><span>N° Recu</span><strong>${p.receiptNo}</strong></div>
-  <div class="r"><span>Date</span><span>${fmtDate(p.date)}</span></div>
-  <div class="r"><span>Eleve</span><strong>${stu?stu.name:''}</strong></div>
-  <div class="r"><span>Matricule</span><span>${stu?stu.matricule:''}</span></div>
-  <div class="r"><span>Trimestre</span><span>${p.term}</span></div><hr>
-  <div class="r"><span>Montant du</span><span>${fmtMoney(p.amount)}</span></div>
-  <div class="r"><span>Paye</span><span>${fmtMoney(p.paid)}</span></div>
-  <div class="r"><span>Reste</span><span>${fmtMoney(p.amount-p.paid)}</span></div>
-  <div class="total">${fmtMoney(p.paid)}</div>
-  ${op?`<p style="color:${op.color};font-weight:600">${op.name}</p>`:''}
-  <p style="font-size:10px;color:#999;margin-top:16px">Ref: ${p.ref}</p>
-  </body></html>`);w.document.close();w.print();
-}
-
-/* ==================== POINTS ==================== */
-function renderPoints(){
-  const sid=CU.schoolId;
-  if(CU.role==='eleve'){
-    const pts=DB.get('points').filter(p=>p.studentId===CU.id).sort((a,b)=>new Date(b.date)-new Date(a.date));
-    const total=pts.reduce((s,p)=>s+p.value,0);
-    return `<div class="ptitle">Mes Points</div><div class="psub">Total: <strong style="color:${total>=0?'var(--ok)':'var(--err)'}">${total} points</strong></div>
-    <div class="card"><div class="ch"><h3>Historique</h3></div><div class="cb">
-      <table><thead><tr><th>Date</th><th>Categorie</th><th>Valeur</th><th>Commentaire</th><th>Enseignant</th></tr></thead>
-      <tbody>${pts.map(p=>{const t=getUser(p.teacherId);return `<tr><td>${fmtDate(p.date)}</td><td><span class="badge bg-i">${p.category}</span></td><td><strong style="color:${p.value>=0?'var(--ok)':'var(--err)'}">${p.value>0?'+':''}${p.value}</strong></td><td>${p.comment||'-'}</td><td>${t?t.name:'-'}</td></tr>`}).join('')||'<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--mut)">Aucun point</td></tr>'}</tbody></table>
-    </div></div>`;
-  }
-  if(CU.role==='parent'){
-    const child=getUser(CU.childId);if(!child)return '<div class="empty-s"><p>Aucun enfant associe</p></div>';
-    const pts=DB.get('points').filter(p=>p.studentId===child.id).sort((a,b)=>new Date(b.date)-new Date(a.date));
-    const total=pts.reduce((s,p)=>s+p.value,0);
-    return `<div class="ptitle">Points de ${child.name}</div><div class="psub">Total: <strong style="color:${total>=0?'var(--ok)':'var(--err)'}">${total} points</strong></div>
-    <div class="card"><div class="cb"><table><thead><tr><th>Date</th><th>Categorie</th><th>Valeur</th><th>Commentaire</th></tr></thead>
-    <tbody>${pts.map(p=>`<tr><td>${fmtDate(p.date)}</td><td><span class="badge bg-i">${p.category}</span></td><td><strong style="color:${p.value>=0?'var(--ok)':'var(--err)'}">${p.value>0?'+':''}${p.value}</strong></td><td>${p.comment||'-'}</td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--mut)">Aucun point</td></tr>'}</tbody></table></div></div>`;
-  }
-  // Enseignant ou prefet
-  const students=getSchoolStudents(sid);
-  const canAdd=CU.role==='enseignant';
-  return `<div class="ptitle">Gestion des Points</div><div class="psub">${students.length} eleves</div>
-  ${canAdd?`<div style="margin-bottom:14px"><button class="btn btn-s btn-p" onclick="showAddPoints()"><i class="fas fa-plus"></i> Attribuer des points</button></div>`:''}
-  <div class="pt-grid">${students.map(s=>{
-    const pts=DB.get('points').filter(p=>p.studentId===s.id).reduce((a,p)=>a+p.value,0);
-    const catPts={comportement:0,participation:0,devoir:0,examen:0};
-    DB.get('points').filter(p=>p.studentId===s.id).forEach(p=>{if(catPts.hasOwnProperty(p.category))catPts[p.category]+=p.value});
-    return `<div class="pt-card"><div class="pt-av">${initials(s.name)}</div><div style="flex:1">
-      <div style="font-size:13px;font-weight:600">${s.name}</div>
-      <div style="font-size:11px;color:var(--mut)">${s.class||''} | ${s.matricule||''}</div>
-      <div style="display:flex;gap:8px;margin-top:6px;font-size:10px">
-        <span title="Comportement" style="color:${catPts.comportement>=0?'var(--ok)':'var(--err)'}"><i class="fas fa-heart"></i> ${catPts.comportement}</span>
-        <span title="Participation" style="color:var(--inf)"><i class="fas fa-hand"></i> ${catPts.participation}</span>
-        <span title="Devoir" style="color:var(--a)"><i class="fas fa-book"></i> ${catPts.devoir}</span>
-        <span title="Examen" style="color:var(--warn)"><i class="fas fa-pen"></i> ${catPts.examen}</span>
-      </div>
-    </div><div class="pt-val">${pts}</div></div>`;
-  }).join('')}</div>`;
-}
-function showAddPoints(){
-  const students=getSchoolStudents(CU.schoolId);
-  showModal('Attribuer des points',`
-    <div class="fg"><label>Eleve</label><select id="ap-student">${students.map(s=>`<option value="${s.id}">${s.name} (${s.class||''})</option>`).join('')}</select></div>
-    <div class="fg"><label>Categorie</label><select id="ap-cat"><option value="comportement">Comportement</option><option value="participation">Participation</option><option value="devoir">Devoir</option><option value="examen">Examen</option></select></div>
-    <div class="fg"><label>Valeur (+ ou -)</label><input type="number" id="ap-val" value="1" min="-10" max="10"></div>
-    <div class="fg"><label>Commentaire</label><input id="ap-comment" placeholder="Raison de l'attribution..."></div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Annuler</button><button class="btn btn-p" onclick="savePoints()">Attribuer</button>`);
-}
-function savePoints(){
-  const studentId=parseInt(document.getElementById('ap-student').value);
-  const value=parseInt(document.getElementById('ap-val').value)||0;
-  if(value===0){toast('Valeur ne peut etre 0','er');return}
-  DB.add('points',{studentId,teacherId:CU.id,category:document.getElementById('ap-cat').value,value,comment:document.getElementById('ap-comment').value.trim(),date:new Date().toISOString()});
-  DB.add('notifications',{userId:studentId,text:`${value>0?'+':''}${value} points (${document.getElementById('ap-cat').value})`,read:false,ts:new Date().toISOString(),type:'points'});
-  hideModal();toast('Points attribues');renderPage();updateNotifBadge();
-}
-
-/* ==================== UTILISATEURS (ADMIN PREFET) ==================== */
-function renderUtilisateurs(){
-  if(CU.role!=='prefet'){return '<div class="empty-s"><i class="fas fa-lock"></i><p>Acces reserve a l\'admin</p></div>'}
-  const users=getSchoolUsers(CU.schoolId).filter(u=>u.role!=='coordinateur');
-  return `<div class="ptitle">Gestion des Utilisateurs</div><div class="psub">${users.length} utilisateurs dans l'etablissement</div>
-  <div style="margin-bottom:14px;display:flex;gap:8px">
-    <button class="btn btn-s btn-p" onclick="showAddUser()"><i class="fas fa-plus"></i> Ajouter un utilisateur</button>
-    <button class="btn btn-s btn-g" onclick="showSchoolCode()"><i class="fas fa-key"></i> Code d'etablissement</button>
-  </div>
-  <div class="card"><div class="tw"><table>
-    <thead><tr><th>Nom</th><th>Email</th><th>Role</th><th>Telephone</th><th>Statut</th><th>Actions</th></tr></thead>
-    <tbody>${users.map(u=>`<tr>
-      <td><strong>${u.name}</strong></td><td>${u.email}</td><td><span class="badge bg-i">${ROLES[u.role]}</span></td><td>${u.phone||'-'}</td>
-      <td>${u.active?'<span class="badge bg-ok">Actif</span>':'<span class="badge bg-d">Inactif</span>'}</td>
-      <td><button class="btn btn-s btn-g" onclick="toggleUserStatus(${u.id})"><i class="fas fa-${u.active?'ban':'check'}"></i></button>
-      ${u.role!=='prefet'?`<button class="btn btn-s btn-d" onclick="removeUser(${u.id})"><i class="fas fa-trash"></i></button>`:''}</td>
-    </tr>`).join('')}</tbody>
-  </table></div></div>`;
-}
-function showAddUser(){
-  showModal('Ajouter un utilisateur',`
-    <div class="fg"><label>Nom complet</label><input id="nu-name"></div>
-    <div class="fg"><label>Email</label><input type="email" id="nu-email"></div>
-    <div class="fg"><label>Telephone</label><input type="tel" id="nu-phone"></div>
-    <div class="fg"><label>Role</label><select id="nu-role"><option value="enseignant">Enseignant</option><option value="eleve">Eleve</option><option value="parent">Parent</option></select></div>
-    <div class="fg"><label>Mot de passe initial</label><input type="password" id="nu-pass" value="ChangeMe@2025"></div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Annuler</button><button class="btn btn-p" onclick="saveNewUser()">Creer</button>`);
-}
-function saveNewUser(){
-  const name=document.getElementById('nu-name').value.trim();if(!name){toast('Nom requis','er');return}
-  const email=document.getElementById('nu-email').value.trim();
-  if(!email){toast('Email requis','er');return}
-  if(DB.get('users').find(u=>u.email.toLowerCase()===email.toLowerCase())){toast('Email deja utilise','er');return}
-  const role=document.getElementById('nu-role').value;
-  const newUser={name,email,pw:document.getElementById('nu-pass').value,role,schoolId:CU.schoolId,phone:document.getElementById('nu-phone').value.trim(),active:true};
-  if(role==='eleve'){newUser.class='Nouveau';newUser.matricule='XX-2025-'+String(DB.get('users').filter(u=>u.role==='eleve').length+1).padStart(3,'0');newUser.dob='';newUser.parentId=null}
-  if(role==='parent')newUser.childId=null;
-  DB.add('users',newUser);
-  hideModal();toast('Utilisateur cree');renderPage();
-}
-function toggleUserStatus(id){DB.upd('users',id,{active:!getUser(id).active});toast('Statut modifie');renderPage()}
-function removeUser(id){if(!confirm('Supprimer cet utilisateur ?'))return;DB.rm('users',id);toast('Utilisateur supprime');renderPage()}
-function showSchoolCode(){
-  const s=getSchool(CU.schoolId);
-  showModal('Code d\'etablissement',`
-    <div style="text-align:center;padding:20px">
-      <p style="font-size:13px;color:var(--mut);margin-bottom:12px">Partagez ce code pour permettre aux nouveaux membres de rejoindre votre etablissement :</p>
-      <div style="font-size:28px;font-weight:800;letter-spacing:4px;color:var(--p);background:var(--bg);padding:16px 24px;border-radius:12px;border:2px dashed var(--pl)">${s?s.code:'-'}</div>
-      <p style="font-size:11px;color:var(--mut);margin-top:12px">${s?s.name:''}</p>
-    </div>
-  `);
-}
-
-/* ==================== RENDU DES PAGES ==================== */
-function renderPage(){
-  const c=document.getElementById('content');
-  Object.values(CHARTS).forEach(ch=>{if(ch&&ch.destroy)ch.destroy()});CHARTS={};
-  switch(CP){
-    case 'dashboard':c.innerHTML=renderDashboard();initDashCharts();break;
-    case 'eleves':c.innerHTML=renderEleves();break;
-    case 'rapports':c.innerHTML=renderRapports();break;
-    case 'communications':c.innerHTML=renderCommunications();break;
-    case 'messages':c.innerHTML=renderMessages();break;
-    case 'paiements':c.innerHTML=renderPaiements();break;
-    case 'points':c.innerHTML=renderPoints();break;
-    case 'utilisateurs':c.innerHTML=renderUtilisateurs();break;
-    case 'assistant':c.innerHTML=renderAssistant();break;
-    case 'parametres':c.innerHTML=renderParametres();break;
-    default:c.innerHTML='<div class="empty-s"><i class="fas fa-folder-open"></i><p>Page non trouvee</p></div>';
-  }
-}
-
-/* ==================== TABLEAU DE BORD (FIXE - PAS DE SCROLL INFINI) ==================== */
-function renderDashboard(){
-  const sid=CU.schoolId;
-  const students=getSchoolStudents(sid);
-  const teachers=getSchoolTeachers(sid);
-  const payments=DB.get('payments').filter(p=>p.schoolId===sid);
-  const reports=DB.get('reports').filter(r=>r.schoolId===sid);
-  const pts=DB.get('points').filter(p=>students.some(s=>s.id===p.studentId));
-  const totalPaid=payments.reduce((s,p)=>s+p.paid,0);
-  const totalDue=payments.reduce((s,p)=>s+p.amount,0);
-
-  if(CU.role==='eleve'){
-    const myPts=pts.filter(p=>p.studentId===CU.id).reduce((s,p)=>s+p.value,0);
-    const myPay=payments.filter(p=>p.studentId===CU.id);
-    return `<div class="dash-wrap">
-      <div class="dash-stats">
-        <div class="sc"><div class="sci g"><i class="fas fa-star"></i></div><div><div class="scv">${myPts}</div><div class="scl">Mes points</div></div></div>
-        <div class="sc"><div class="sci a"><i class="fas fa-file-lines"></i></div><div><div class="scv">${myPay.filter(p=>p.status==='paid').length}/${myPay.length}</div><div class="scl">Paiements</div></div></div>
-        <div class="sc"><div class="sci t"><i class="fas fa-envelope"></i></div><div><div class="scv">${DB.get('messages').filter(m=>m.to===CU.id||m.from===CU.id).length}</div><div class="scl">Messages</div></div></div>
-        <div class="sc"><div class="sci r"><i class="fas fa-bullhorn"></i></div><div><div class="scv">${DB.get('communications').filter(c=>c.schoolId===sid&&c.scope==='ecole').length}</div><div class="scl">Communications</div></div></div>
-      </div>
-      <div class="dash-charts">
-        <div class="cc"><h3>Evolution de mes points</h3><canvas id="chart-pts"></canvas></div>
-        <div class="cc"><h3>Activites recentes</h3><div class="cb" style="overflow-y:auto">${renderDashActivities(sid)}</div></div>
-      </div>
-    </div>`;
-  }
-  if(CU.role==='parent'){
-    const child=getUser(CU.childId);
-    const childPts=child?pts.filter(p=>p.studentId===child.id).reduce((s,p)=>s+p.value,0):0;
-    const childPay=child?payments.filter(p=>p.studentId===child.id):[];
-    return `<div class="dash-wrap">
-      <div class="dash-stats">
-        <div class="sc"><div class="sci g"><i class="fas fa-user-graduate"></i></div><div><div class="scv">${child?child.name:'-'}</div><div class="scl">Mon enfant</div></div></div>
-        <div class="sc"><div class="sci a"><i class="fas fa-star"></i></div><div><div class="scv">${childPts}</div><div class="scl">Points</div></div></div>
-        <div class="sc"><div class="sci t"><i class="fas fa-money-bill-wave"></i></div><div><div class="scv">${fmtMoney(childPay.reduce((s,p)=>s+p.paid,0))}</div><div class="scl">Total paye</div></div></div>
-        <div class="sc"><div class="sci r"><i class="fas fa-envelope"></i></div><div><div class="scv">${DB.get('messages').filter(m=>m.to===CU.id||m.from===CU.id).length}</div><div class="scl">Messages</div></div></div>
-      </div>
-      <div class="dash-charts">
-        <div class="cc"><h3>Paiements de l'enfant</h3><canvas id="chart-pay"></canvas></div>
-        <div class="cc"><h3>Activites recentes</h3><div class="cb" style="overflow-y:auto">${renderDashActivities(sid)}</div></div>
-      </div>
-    </div>`;
-  }
-  // Coordinateur, Prefet, Enseignant
-  return `<div class="dash-wrap">
-    <div class="dash-stats">
-      <div class="sc"><div class="sci g"><i class="fas fa-user-graduate"></i></div><div><div class="scv">${students.length}</div><div class="scl">Eleves</div></div></div>
-      <div class="sc"><div class="sci a"><i class="fas fa-chalkboard-user"></i></div><div><div class="scv">${teachers.length}</div><div class="scl">Enseignants</div></div></div>
-      <div class="sc"><div class="sci t"><i class="fas fa-money-bill-wave"></i></div><div><div class="scv">${fmtMoney(totalPaid)}</div><div class="scl">Paye / ${fmtMoney(totalDue)}</div></div></div>
-      <div class="sc"><div class="sci r"><i class="fas fa-file-lines"></i></div><div><div class="scv">${reports.length}</div><div class="scl">Rapports</div></div></div>
-    </div>
-    <div class="dash-charts">
-      <div class="cc"><h3>Paiements par trimestre</h3><canvas id="chart-pay"></canvas></div>
-      <div class="cc"><h3>Repartition des points</h3><canvas id="chart-pts-dist"></canvas></div>
-    </div>
-    <div class="dash-bottom">
-      <div class="cc"><h3>Activite recente</h3><div class="cb" style="overflow-y:auto">${renderDashActivities(sid)}</div></div>
-      <div class="cc"><h3>Actions rapides</h3><div class="cb" style="display:flex;flex-direction:column;gap:6px">${renderQuickActions()}</div></div>
-    </div>
-  </div>`;
-}
-function renderDashActivities(sid){
-  const students=getSchoolStudents(sid);
-  const payments=DB.get('payments').filter(p=>p.schoolId===sid);
-  const reports=DB.get('reports').filter(r=>r.schoolId===sid);
-  const acts=[
-    {color:'var(--ok)',text:`${students.length} eleves inscrits`,time:'Cette saison'},
-    {color:'var(--a)',text:`${payments.filter(p=>p.status==='paid').length} paiements completes`,time:'Ce trimestre'},
-    {color:'var(--inf)',text:`${reports.filter(r=>r.status!=='brouillon').length} rapports deposés`,time:'En cours'},
-    {color:'var(--warn)',text:`${payments.filter(p=>p.status==='unpaid').length} paiements en attente`,time:'Action requise'}
-  ];
-  return acts.map(a=>`<div class="act-item"><div class="act-dot" style="background:${a.color}"></div><div><div>${a.text}</div><div class="act-time">${a.time}</div></div></div>`).join('');
-}
-function renderQuickActions(){
-  let btns='';
-  if(CU.role==='enseignant')btns=`<button class="btn btn-s btn-p" onclick="nav('rapports')"><i class="fas fa-upload"></i> Deposer un rapport</button><button class="btn btn-s btn-g" onclick="nav('points')"><i class="fas fa-star"></i> Gerer les points</button>`;
-  if(CU.role==='prefet')btns=`<button class="btn btn-s btn-p" onclick="nav('rapports')"><i class="fas fa-upload"></i> Deposer un rapport</button><button class="btn btn-s btn-a" onclick="nav('communications')"><i class="fas fa-bullhorn"></i> Publier une communication</button><button class="btn btn-s btn-g" onclick="nav('paiements')"><i class="fas fa-money-bill"></i> Enregistrer un paiement</button>`;
-  if(CU.role==='coordinateur')btns=`<button class="btn btn-s btn-p" onclick="nav('rapports')"><i class="fas fa-file-lines"></i> Consulter les rapports</button><button class="btn btn-s btn-a" onclick="nav('communications')"><i class="fas fa-bullhorn"></i> Nouvelle communication</button>`;
-  btns+=`<button class="btn btn-s btn-g" onclick="nav('messages')"><i class="fas fa-comments"></i> Messages</button><button class="btn btn-s btn-g" onclick="nav('assistant')"><i class="fas fa-robot"></i> Assistant IA</button>`;
-  return btns;
-}
-function initDashCharts(){
-  const sid=CU.schoolId;
-  if(CU.role==='eleve'){
-    const el=document.getElementById('chart-pts');if(!el)return;
-    const pts=DB.get('points').filter(p=>p.studentId===CU.id).sort((a,b)=>new Date(a.date)-new Date(b.date));
-    const cum=[];let s=0;pts.forEach(p=>{s+=p.value;cum.push(s)});
-    CHARTS.pts=new Chart(el,{type:'line',data:{labels:pts.map(p=>fmtDate(p.date)),datasets:[{label:'Points cumules',data:cum,borderColor:'#40916C',backgroundColor:'rgba(64,145,108,.1)',fill:true,tension:.4,pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
-    return;
-  }
-  if(CU.role==='parent'){
-    const el=document.getElementById('chart-pay');if(!el)return;
-    const child=getUser(CU.childId);if(!child)return;
-    const pays=DB.get('payments').filter(p=>p.studentId===child.id);
-    CHARTS.pay=new Chart(el,{type:'bar',data:{labels:pays.map(p=>p.term),datasets:[{label:'Paye',data:pays.map(p=>p.paid),backgroundColor:'#40916C'},{label:'Reste',data:pays.map(p=>p.amount-p.paid),backgroundColor:'#E2E2D8'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{y:{beginAtZero:true}}}});
-    return;
-  }
-  const el1=document.getElementById('chart-pay');
-  const el2=document.getElementById('chart-pts-dist');
-  if(el1){
-    const pays=DB.get('payments').filter(p=>p.schoolId===sid);
-    const terms=[...new Set(pays.map(p=>p.term))];
-    CHARTS.pay=new Chart(el1,{type:'bar',data:{labels:terms,datasets:[{label:'Paye',data:terms.map(t=>pays.filter(p=>p.term===t).reduce((s,p)=>s+p.paid,0)),backgroundColor:'#40916C',borderRadius:6},{label:'Reste',data:terms.map(t=>pays.filter(p=>p.term===t).reduce((s,p)=>s+p.amount-p.paid,0)),backgroundColor:'#E2E2D8',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{y:{beginAtZero:true}}}});
-  }
-  if(el2){
-    const students=getSchoolStudents(sid);
-    const pts=DB.get('points').filter(p=>students.some(s=>s.id===p.studentId));
-    const cats=['comportement','participation','devoir','examen'];
-    CHARTS.ptsDist=new Chart(el2,{type:'doughnut',data:{labels:cats,datasets:[{data:cats.map(c=>pts.filter(p=>p.category===c).length),backgroundColor:['#1B4332','#40916C','#C77B30','#D4A017']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}}}});
-  }
-}
-
-/* ==================== ELEVES & CARTES D'IDENTITE ==================== */
-function renderEleves(){
-  const sid=CU.schoolId;
-  const students=getSchoolStudents(sid);
-  const canManage=CU.role==='prefet'||CU.role==='enseignant';
-  return `<div class="ptitle">Gestion des Eleves</div><div class="psub">${students.length} eleves inscrits</div>
-  <div class="tab-bar no-print">
-    <button class="tab-btn act" onclick="switchElTab(this,'el-list')">Liste</button>
-    <button class="tab-btn" onclick="switchElTab(this,'el-cards')">Cartes d'identite</button>
-  </div>
-  <div id="el-list">
-    <div style="display:flex;gap:8px;margin-bottom:14px" class="no-print">
-      <input type="text" placeholder="Rechercher un eleve..." oninput="filterStudents(this.value)" style="flex:1;padding:9px 14px;border:2px solid var(--brd);border-radius:10px;font-size:12px;background:var(--bg)">
-      ${canManage?`<button class="btn btn-s btn-p" onclick="showAddStudent()"><i class="fas fa-plus"></i> Ajouter</button>`:''}
-    </div>
-    <div class="card"><div class="tw"><table id="el-table">
-      <thead><tr><th>Matricule</th><th>Nom</th><th>Classe</th><th>Points</th><th>Paiement</th><th>Actions</th></tr></thead>
-      <tbody>${students.map(s=>{
-        const sPts=DB.get('points').filter(p=>p.studentId===s.id).reduce((a,p)=>a+p.value,0);
-        const sPays=DB.get('payments').filter(p=>p.studentId===s.id);
-        const lastPay=sPays[sPays.length-1];
-        const payB=lastPay?(lastPay.status==='paid'?'<span class="badge bg-ok">Paye</span>':lastPay.status==='partial'?'<span class="badge bg-w">Partiel</span>':'<span class="badge bg-d">Impaye</span>'):'<span class="badge bg-d">Aucun</span>';
-        return `<tr><td><strong>${s.matricule||'-'}</strong></td><td>${s.name}</td><td>${s.class||'-'}</td><td><strong style="color:${sPts>=0?'var(--ok)':'var(--err)'}">${sPts}</strong></td><td>${payB}</td><td class="no-print"><button class="btn btn-s btn-g" onclick="showStudentCard(${s.id})"><i class="fas fa-id-card"></i></button> ${canManage?`<button class="btn btn-s btn-g" onclick="editStudent(${s.id})"><i class="fas fa-pen"></i></button>`:''}</td></tr>`;
-      }).join('')}</tbody>
-    </table></div></div>
-  </div>
-  <div id="el-cards" class="hidden">
-    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">${students.map(s=>renderIDCard(s)).join('')}</div>
-  </div>`;
-}
-function renderIDCard(s){
-  const school=getSchool(s.schoolId);
-  return `<div class="id-card" id="card-${s.id}">
-    <div class="id-badge">ELEVE</div>
-    <div class="id-photo">${s.photo?`<img src="${s.photo}" alt="photo">`:'<i class="fas fa-user"></i>'}</div>
-    <div class="id-info">
-      <h4>${s.name.toUpperCase()}</h4>
-      <p><i class="fas fa-hashtag"></i> ${s.matricule||'N/A'}</p>
-      <p><i class="fas fa-calendar"></i> ${s.dob?fmtDate(s.dob):'N/A'}</p>
-      <p><i class="fas fa-chalkboard"></i> ${s.class||'N/A'}</p>
-      <p><i class="fas fa-phone"></i> ${s.phone||'N/A'}</p>
-    </div>
-    <div class="id-school">${school?school.name.toUpperCase():''}<br>Annee 2025-2026</div>
-  </div>`;
-}
-function showStudentCard(id){
-  const s=getUser(id);if(!s)return;
-  showModal('Carte d\'identite - '+s.name,`
-    <div style="display:flex;justify-content:center;margin-bottom:16px">${renderIDCard(s)}</div>
-    <div style="display:flex;gap:8px;justify-content:center" class="no-print">
-      <button class="btn btn-s btn-p" onclick="printCard(${s.id})"><i class="fas fa-print"></i> Imprimer</button>
-      <button class="btn btn-s btn-g" onclick="uploadStudentPhoto(${s.id})"><i class="fas fa-camera"></i> Photo</button>
-    </div>
-  `);
-}
-function printCard(id){
-  const card=document.getElementById('card-'+id);if(!card)return;
-  const w=window.open('','','width=400,height=300');
-  w.document.write('<html><head><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Outfit,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#fff}.id-card{width:340px;height:210px;background:linear-gradient(135deg,#1B4332,#2D6A4F);border-radius:14px;padding:16px;color:#fff;display:flex;gap:14px;position:relative;overflow:hidden}.id-card::before{content:"";position:absolute;top:-30px;right:-30px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.06)}.id-card::after{content:"";position:absolute;bottom:-20px;left:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04)}.id-badge{position:absolute;top:10px;right:12px;background:#C77B30;color:#fff;font-size:7px;font-weight:700;padding:2px 8px;border-radius:10px;z-index:1}.id-photo{width:80px;height:100px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;overflow:hidden;border:2px solid rgba(255,255,255,.2)}.id-photo img{width:100%;height:100%;object-fit:cover}.id-info{flex:1;display:flex;flex-direction:column;gap:3px;position:relative;z-index:1}.id-info h4{font-size:13px;font-weight:700}.id-info p{font-size:10px;opacity:.85}.id-school{position:absolute;bottom:12px;right:14px;font-size:8px;opacity:.6;text-align:right;z-index:1}</style></head><body>'+card.outerHTML+'</body></html>');
-  w.document.close();w.print();
-}
-function uploadStudentPhoto(id){
-  IMG_CB=function(base64){
-    DB.upd('users',id,{photo:base64});
-    const card=document.getElementById('card-'+id);
-    if(card){const ph=card.querySelector('.id-photo');ph.innerHTML='<img src="'+base64+'" alt="photo">'}
-    toast('Photo mise a jour');
-  };
-  document.getElementById('img-input').click();
-}
-function showAddStudent(){
-  showModal('Ajouter un eleve',`
-    <div class="fg"><label>Nom complet</label><input id="ns-name" required></div>
-    <div class="fg"><label>Date de naissance</label><input type="date" id="ns-dob"></div>
-    <div class="fg"><label>Classe</label><input id="ns-class" placeholder="Ex: 6eme A"></div>
-    <div class="fg"><label>Telephone</label><input type="tel" id="ns-phone"></div>
-    <div class="fg"><label>Parent (optionnel)</label><select id="ns-parent"><option value="">Aucun</option>${DB.get('users').filter(u=>u.schoolId===CU.schoolId&&u.role==='parent').map(p=>'<option value="'+p.id+'">'+p.name+'</option>').join('')}</select></div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Annuler</button><button class="btn btn-p" onclick="addStudent()">Ajouter</button>`);
-}
-function addStudent(){
-  const name=document.getElementById('ns-name').value.trim();if(!name){toast('Nom requis','er');return}
-  const school=getSchool(CU.schoolId);
-  const mat=school?school.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)+'-'+new Date().getFullYear()+'-'+String(DB.get('users').filter(u=>u.role==='eleve'&&u.schoolId===CU.schoolId).length+1).padStart(3,'0'):'XX';
-  DB.add('users',{name,dob:document.getElementById('ns-dob').value,class:document.getElementById('ns-class').value.trim(),phone:document.getElementById('ns-phone').value.trim(),role:'eleve',schoolId:CU.schoolId,active:true,matricule:mat,parentId:document.getElementById('ns-parent').value?parseInt(document.getElementById('ns-parent').value):null});
-  hideModal();toast('Eleve ajoute');renderPage();
-}
-function editStudent(id){
-  const s=getUser(id);if(!s)return;
-  showModal('Modifier l\'eleve',`
-    <div class="fg"><label>Nom complet</label><input id="es-name" value="${s.name}"></div>
-    <div class="fg"><label>Date de naissance</label><input type="date" id="es-dob" value="${s.dob||''}"></div>
-    <div class="fg"><label>Classe</label><input id="es-class" value="${s.class||''}"></div>
-    <div class="fg"><label>Telephone</label><input type="tel" id="es-phone" value="${s.phone||''}"></div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Annuler</button><button class="btn btn-p" onclick="saveStudent(${id})">Enregistrer</button>`);
-}
-function saveStudent(id){
-  DB.upd('users',id,{name:document.getElementById('es-name').value.trim(),dob:document.getElementById('es-dob').value,class:document.getElementById('es-class').value.trim(),phone:document.getElementById('es-phone').value.trim()});
-  hideModal();toast('Eleve mis a jour');renderPage();
-}
-function switchElTab(btn,tabId){
-  btn.parentElement.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('act'));btn.classList.add('act');
-  document.getElementById('el-list').classList.toggle('hidden',tabId!=='el-list');
-  document.getElementById('el-cards').classList.toggle('hidden',tabId!=='el-cards');
-}
-function filterStudents(q){
-  document.querySelectorAll('#el-table tbody tr').forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none'});
-}
-
-/* ==================== RAPPORTS & DEPOTS AUTOMATIQUES ==================== */
-function renderRapports(){
-  const sid=CU.schoolId;
-  let reports=DB.get('reports').filter(r=>r.schoolId===sid);
-  const sL={brouillon:'Brouillon',depose_prefet:'Depose au Prefet',recu_prefet:'Recu par Prefet',depose_coord:'Depose a la Coord.',recu_coord:'Recu par Coord.',valide:'Valide',rejete:'Rejete'};
-  const sC={brouillon:'bg-w',depose_prefet:'bg-i',recu_prefet:'bg-a',depose_coord:'bg-i',recu_coord:'bg-a',valide:'bg-ok',rejete:'bg-d'};
-  const tL={pedagogique:'Pedagogique',discipline:'Discipline',financier:'Financier',activite:'Activite'};
-  if(CU.role==='enseignant')reports=reports.filter(r=>r.authorId===CU.id);
-  if(CU.role==='prefet')reports=reports.filter(r=>r.authorId===CU.id||r.toId===CU.id);
-  if(CU.role==='coordinateur')reports=reports.filter(r=>r.toId===CU.id||r.status==='depose_coord'||r.status==='recu_coord');
-  const canCreate=CU.role==='enseignant'||CU.role==='prefet';
-  const canGen=CU.role==='prefet'||CU.role==='coordinateur';
-  return `<div class="ptitle">Rapports & Depots</div><div class="psub">Gestion et depot de rapports scolaires</div>
-  <div style="display:flex;gap:8px;margin-bottom:14px">
-    ${canCreate?'<button class="btn btn-s btn-p" onclick="showNewReport()"><i class="fas fa-plus"></i> Nouveau rapport</button>':''}
-    ${canGen?'<button class="btn btn-s btn-a" onclick="showGenReport()"><i class="fas fa-wand-magic-sparkles"></i> Generer un rapport</button>':''}
-  </div>
-  <div class="card"><div class="tw"><table>
-    <thead><tr><th>Type</th><th>Titre</th><th>Auteur</th><th>Statut</th><th>Date</th><th>Actions</th></tr></thead>
-    <tbody>${reports.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(r=>{
-      const author=getUser(r.authorId);
-      let actions='<button class="btn btn-s btn-g" onclick="viewReport('+r.id+')"><i class="fas fa-eye"></i></button>';
-      if(CU.role==='prefet'&&r.toId===CU.id&&r.status==='depose_prefet')actions+=' <button class="btn btn-s btn-p" onclick="receiveReport('+r.id+')"><i class="fas fa-check"></i></button>';
-      if(CU.role==='prefet'&&r.status==='recu_prefet')actions+=' <button class="btn btn-s btn-a" onclick="forwardReport('+r.id+')"><i class="fas fa-upload"></i></button> <button class="btn btn-s btn-d" onclick="rejectReport('+r.id+')"><i class="fas fa-times"></i></button>';
-      if(CU.role==='coordinateur'&&r.toId===CU.id&&r.status==='depose_coord')actions+=' <button class="btn btn-s btn-p" onclick="receiveReport('+r.id+')"><i class="fas fa-check"></i></button>';
-      if(CU.role==='coordinateur'&&r.status==='recu_coord')actions+=' <button class="btn btn-s btn-p" onclick="validateReport('+r.id+')"><i class="fas fa-check-double"></i> Valider</button>';
-      if(r.status==='brouillon'&&r.authorId===CU.id)actions+=' <button class="btn btn-s btn-a" onclick="depositReport('+r.id+')"><i class="fas fa-upload"></i> Deposer</button> <button class="btn btn-s btn-d" onclick="DB.rm(\'reports\','+r.id+');renderPage();toast(\'Supprime\')"><i class="fas fa-trash"></i></button>';
-      return '<tr><td><span class="badge bg-i">'+(tL[r.type]||r.type)+'</span></td><td><strong>'+r.title+'</strong></td><td>'+(author?author.name:'-')+'</td><td><span class="badge '+(sC[r.status]||'bg-w')+'">'+(sL[r.status]||r.status)+'</span></td><td>'+fmtDate(r.createdAt)+'</td><td>'+actions+'</td></tr>';
-    }).join('')||'<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--mut)">Aucun rapport</td></tr>'}</tbody>
-  </table></div></div>`;
-}
-function showNewReport(){
-  showModal('Nouveau rapport',`
-    <div class="fg"><label>Type</label><select id="nr-type"><option value="pedagogique">Pedagogique</option><option value="discipline">Discipline</option><option value="activite">Activite</option><option value="financier">Financier</option></select></div>
-    <div class="fg"><label>Titre</label><input id="nr-title" required></div>
-    <div class="fg"><label>Contenu</label><textarea id="nr-content" rows="6" placeholder="Redigez votre rapport..."></textarea></div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Annuler</button><button class="btn btn-p" onclick="saveNewReport()">Enregistrer</button>`);
-}
-function saveNewReport(){
-  const title=document.getElementById('nr-title').value.trim();if(!title){toast('Titre requis','er');return}
-  let toId=null;
-  if(CU.role==='enseignant'){const pr=DB.get('users').find(u=>u.schoolId===CU.schoolId&&u.role==='prefet');toId=pr?pr.id:null}
-  DB.add('reports',{type:document.getElementById('nr-type').value,title,content:document.getElementById('nr-content').value,authorId:CU.id,schoolId:CU.schoolId,status:'brouillon',toId,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});
-  hideModal();toast('Rapport cree');renderPage();
-}
-function depositReport(id){
-  if(CU.role==='enseignant'){const pr=DB.get('users').find(u=>u.schoolId===CU.schoolId&&u.role==='prefet');DB.upd('reports',id,{status:'depose_prefet',toId:pr?pr.id:null,updatedAt:new Date().toISOString()});if(pr)DB.add('notifications',{userId:pr.id,text:'Nouveau rapport de '+CU.name,read:false,ts:new Date().toISOString(),type:'report'})}
-  hideModal();toast('Rapport depose');renderPage();updateNotifBadge();
-}
-function receiveReport(id){
-  const r=DB.find('reports',id);if(!r)return;
-  DB.upd('reports',id,{status:r.status==='depose_prefet'?'recu_prefet':'recu_coord',updatedAt:new Date().toISOString()});
-  toast('Rapport recu');renderPage();
-}
-function forwardReport(id){
-  const coord=DB.get('users').find(u=>u.schoolId===CU.schoolId&&u.role==='coordinateur');
-  if(!coord){toast('Aucun coordinateur','er');return}
-  const r=DB.find('reports',id);
-  DB.upd('reports',id,{status:'depose_coord',toId:coord.id,updatedAt:new Date().toISOString()});
-  DB.add('notifications',{userId:coord.id,text:'Rapport de '+CU.name+': '+(r?r.title:''),read:false,ts:new Date().toISOString(),type:'report'});
-  toast('Rapport depose a la coordination');renderPage();updateNotifBadge();
-}
-function rejectReport(id){DB.upd('reports',id,{status:'rejete',updatedAt:new Date().toISOString()});toast('Rapport rejete','wa');renderPage()}
-function validateReport(id){DB.upd('reports',id,{status:'valide',updatedAt:new Date().toISOString()});toast('Rapport valide');renderPage()}
-function viewReport(id){
-  const r=DB.find('reports',id);if(!r)return;
-  const author=getUser(r.authorId);
-  const sL={brouillon:'Brouillon',depose_prefet:'Depose au Prefet',recu_prefet:'Recu par Prefet',depose_coord:'Depose a la Coord.',recu_coord:'Recu par Coord.',valide:'Valide',rejete:'Rejete'};
-  showModal(r.title,`
-    <div style="display:flex;gap:8px;margin-bottom:14px"><span class="badge bg-i">${r.type}</span><span class="badge bg-a">${sL[r.status]||r.status}</span></div>
-    <p style="font-size:12px;color:var(--mut);margin-bottom:12px">Auteur: ${author?author.name:'-'} | Cree: ${fmtDate(r.createdAt)} | Modifie: ${fmtDate(r.updatedAt)}</p>
-    <div style="background:var(--bg);padding:16px;border-radius:10px;font-size:13px;line-height:1.7;white-space:pre-wrap">${r.content||'Aucun contenu'}</div>
-  `);
-}
-function showGenReport(){
-  const sid=CU.schoolId;const students=getSchoolStudents(sid);const teachers=getSchoolTeachers(sid);
-  const payments=DB.get('payments').filter(p=>p.schoolId===sid);
-  const pts=DB.get('points').filter(p=>students.some(s=>s.id===p.studentId));
-  const totalPaid=payments.reduce((s,p)=>s+p.paid,0);const totalDue=payments.reduce((s,p)=>s+p.amount,0);
-  let content='RAPPORT GENERE AUTOMATIQUEMENT\nEtablissement: '+(getSchool(sid)?.name||'')+'\nDate: '+fmtDate(new Date())+'\n'+'='.repeat(50)+'\n\n';
-  content+='EFFECTIFS:\n- Eleves: '+students.length+'\n- Enseignants: '+teachers.length+'\n\n';
-  content+='PAIEMENTS:\n- Total du: '+fmtMoney(totalDue)+'\n- Total paye: '+fmtMoney(totalPaid)+'\n- Taux: '+(totalDue?((totalPaid/totalDue)*100).toFixed(1):0)+'%\n\n';
-  content+='POINTS:\n- Comportement: '+pts.filter(p=>p.category==='comportement').reduce((s,p)=>s+p.value,0)+'\n';
-  content+='- Participation: '+pts.filter(p=>p.category==='participation').reduce((s,p)=>s+p.value,0)+'\n';
-  content+='- Devoirs: '+pts.filter(p=>p.category==='devoir').reduce((s,p)=>s+p.value,0)+'\n';
-  content+='- Examens: '+pts.filter(p=>p.category==='examen').reduce((s,p)=>s+p.value,0)+'\n';
-  showModal('Generer un rapport automatique',`
-    <div class="fg"><label>Type</label><select id="gr-type"><option value="pedagogique">Pedagogique</option><option value="financier">Financier</option><option value="activite">Activite</option></select></div>
-    <div class="fg"><label>Titre</label><input id="gr-title" value="Rapport synthetique - ${fmtDate(new Date())}"></div>
-    <div class="fg"><label>Contenu</label><textarea id="gr-content" rows="10" style="font-size:11px">${content}</textarea></div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Annuler</button><button class="btn btn-p" onclick="saveGenReport()"><i class="fas fa-save"></i> Enregistrer</button><button class="btn btn-a" onclick="printGenReport()"><i class="fas fa-print"></i> Imprimer</button>`);
-}
-function saveGenReport(){
-  const title=document.getElementById('gr-title').value.trim();if(!title){toast('Titre requis','er');return}
-  let toId=null;
-  if(CU.role==='prefet'){const c=DB.get('users').find(u=>u.schoolId===CU.schoolId&&u.role==='coordinateur');toId=c?c.id:null}
-  DB.add('reports',{type:document.getElementById('gr-type').value,title,content:document.getElementById('gr-content').value,authorId:CU.id,schoolId:CU.schoolId,status:toId?'depose_coord':'brouillon',toId,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});
-  if(toId)DB.add('notifications',{userId:toId,text:'Rapport de '+CU.name+': '+title,read:false,ts:new Date().toISOString(),type:'report'});
-  hideModal();toast('Rapport genere');renderPage();updateNotifBadge();
-}
-function printGenReport(){const c=document.getElementById('gr-content').value;const w=window.open('','','width=600');w.document.write('<pre style="font-family:monospace;font-size:12px;padding:20px">'+c+'</pre>');w.document.close();w.print()}
-
-/* ==================== COMMUNICATIONS SCOLAIRES ==================== */
-function renderCommunications(){
-  const sid=CU.schoolId;
-  let comms=DB.get('communications');
-  if(CU.role==='coordinateur')comms=comms.filter(c=>c.scope==='prefets'||(c.scope==='ecole'&&c.schoolId===sid));
-  else comms=comms.filter(c=>c.scope==='ecole'&&c.schoolId===sid);
-  const canCreate=CU.role==='coordinateur'||CU.role==='prefet';
-  const pL={haute:'Haute priorite',moyenne:'Moyenne',basse:'Basse'};
-  const pC={haute:'bg-d',moyenne:'bg-w',basse:'bg-ok'};
-  return `<div class="ptitle">Communications Scolaires</div><div class="psub">${CU.role==='coordinateur'?'Communications de la coordination':'Communications de l\'etablissement'}</div>
-  ${canCreate?'<div style="margin-bottom:14px"><button class="btn btn-s btn-p" onclick="showNewComm()"><i class="fas fa-plus"></i> Nouvelle communication</button></div>':''}
-  ${comms.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(c=>{
-    const author=getUser(c.authorId);
-    return '<div class="comm-card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span class="badge '+(pC[c.priority]||'bg-w')+'">'+(pL[c.priority]||c.priority)+'</span>'+(c.scope==='prefets'?'<span class="badge bg-i">Coord. → Prefets</span>':'<span class="badge bg-ok">Etablissement</span>')+'</div><h4>'+c.title+'</h4><p>'+c.content+'</p>'+(c.img?'<img src="'+c.img+'" alt="image">':'')+'<div class="comm-meta"><span><i class="fas fa-user"></i> '+(author?author.name:'-')+'</span><span><i class="fas fa-calendar"></i> '+fmtDate(c.createdAt)+'</span></div></div>';
-  }).join('')||'<div class="empty-s"><i class="fas fa-bullhorn"></i><p>Aucune communication</p></div>'}`;
-}
-function showNewComm(){
-  const scopeOpts=CU.role==='coordinateur'?'<option value="prefets">Vers les prefets</option><option value="ecole">Vers un etablissement</option>':'<option value="ecole">Etablissement entier</option>';
-  const schoolOpts=CU.role==='coordinateur'?DB.get('schools').map(s=>'<option value="'+s.id+'">'+s.name+'</option>').join(''):'';
-  showModal('Nouvelle communication',`
-    <div class="fg"><label>Destinataires</label><select id="nc-scope">${scopeOpts}</select></div>
-    ${CU.role==='coordinateur'?'<div class="fg"><label>Etablissement</label><select id="nc-school">'+schoolOpts+'</select></div>':''}
-    <div class="fg"><label>Priorite</label><select id="nc-prio"><option value="moyenne">Moyenne</option><option value="haute">Haute</option><option value="basse">Basse</option></select></div>
-    <div class="fg"><label>Titre</label><input id="nc-title" required></div>
-    <div class="fg"><label>Contenu</label><textarea id="nc-content" rows="5"></textarea></div>
-    <div class="fg"><label>Image (optionnel)</label><button class="btn btn-s btn-g" onclick="IMG_CB=function(b){document.getElementById(\'nc-img-prev\').src=b;document.getElementById(\'nc-img-data\').value=b;document.getElementById(\'nc-img-prev\').classList.remove(\'hidden\')};document.getElementById(\'img-input\').click()"><i class="fas fa-image"></i> Ajouter une image</button><input type="hidden" id="nc-img-data"><img id="nc-img-prev" class="img-preview hidden"></div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Annuler</button><button class="btn btn-p" onclick="saveNewComm()">Publier</button>`);
-}
-function saveNewComm(){
-  const title=document.getElementById('nc-title').value.trim();if(!title){toast('Titre requis','er');return}
-  const scope=document.getElementById('nc-scope').value;
-  const schoolId=scope==='ecole'?(CU.role==='coordinateur'?parseInt(document.getElementById('nc-school').value):CU.schoolId):0;
-  const img=document.getElementById('nc-img-data').value||null;
-  DB.add('communications',{authorId:CU.id,schoolId,title,content:document.getElementById('nc-content').value,img,scope,priority:document.getElementById('nc-prio').value,createdAt:new Date().toISOString()});
-  if(scope==='prefets'){DB.get('users').filter(u=>u.role==='prefet').forEach(p=>DB.add('notifications',{userId:p.id,text:'Communication de la coordination: '+title,read:false,ts:new Date().toISOString(),type:'info'}))}
-  else{getSchoolUsers(schoolId).filter(u=>u.id!==CU.id).forEach(u=>DB.add('notifications',{userId:u.id,text:'Nouvelle communication: '+title,read:false,ts:new Date().toISOString(),type:'info'}))}
-  hideModal();toast('Communication publiee');renderPage();updateNotifBadge();
-}
-
-/* ==================== MESSAGES (TEXTE + IMAGES) ==================== */
-function renderMessages(){
-  const convos=getConversations();
-  return `<div class="ptitle">Messages</div><div class="psub">Echangez avec les membres de l'etablissement</div>
-  <div class="msg-lay">
-    <div class="ml">
-      <div class="ml-head"><input type="text" placeholder="Rechercher..." oninput="filterConvos(this.value)"></div>
-      <div id="msg-list">${convos.map(c=>{
-        const other=getUser(c.otherId);if(!other)return '';
-        return '<div class="mli'+(SEL_CONV===c.otherId?' act':'')+'" onclick="openConv('+c.otherId+')"><div class="ma">'+initials(other.name)+'</div><div style="flex:1;min-width:0"><div class="mn">'+other.name+' <span style="font-size:9px;color:var(--mut)">('+ROLES[other.role]+')</span></div><div class="mp">'+(c.lastMsg?(c.lastMsg.img?'<i class="fas fa-image"></i> Image':c.lastMsg.text):'Aucun message')+'</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span class="mt">'+(c.lastMsg?fmtTime(c.lastMsg.ts):'')+'</span>'+(c.unread?'<span style="width:8px;height:8px;border-radius:50%;background:var(--err)"></span>':'')+'</div></div>';
-      }).join('')||'<div class="empty-s" style="padding:20px"><i class="fas fa-comments"></i><p>Aucune conversation</p></div>'}</div>
-    </div>
-    <div class="mc">
-      ${SEL_CONV?'<div class="mc-h"><span>'+(getUser(SEL_CONV)?.name||'')+' ('+ROLES[getUser(SEL_CONV)?.role]+')</span></div><div class="mc-b" id="msg-bubbles">'+renderMsgBubbles(SEL_CONV)+'</div><div class="mc-i"><button class="img-btn" onclick="IMG_CB=function(b){sendMsg(b)};document.getElementById(\'img-input\').click()"><i class="fas fa-image"></i></button><input type="text" id="msg-input" placeholder="Ecrivez un message..." onkeydown="if(event.key===\'Enter\')sendMsg()"><button class="send-btn" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button></div>':'<div class="empty-s" style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center"><i class="fas fa-comments"></i><p>Selectionnez une conversation</p></div>'}
-    </div>
-  </div>`;
-}
-function getConversations(){
-  const msgs=DB.get('messages').filter(m=>m.from===CU.id||m.to===CU.id);
-  const otherIds=[...new Set(msgs.map(m=>m.from===CU.id?m.to:m.from))];
-  const schoolUsers=getSchoolUsers(CU.schoolId).filter(u=>u.id!==CU.id);
-  const allIds=[...new Set([...otherIds,...schoolUsers.map(u=>u.id)])];
-  return allIds.map(oid=>{
-    const cMsgs=msgs.filter(m=>(m.from===CU.id&&m.to===oid)||(m.from===oid&&m.to===CU.id)).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
-    return {otherId:oid,lastMsg:cMsgs[0]||null,unread:cMsgs.filter(m=>m.to===CU.id&&!m.read).length};
-  }).filter(c=>getUser(c.otherId)).sort((a,b)=>(b.lastMsg?new Date(b.lastMsg.ts):0)-(a.lastMsg?new Date(a.lastMsg.ts):0));
-}
-function openConv(oid){
-  SEL_CONV=oid;
-  DB.get('messages').filter(m=>m.from===oid&&m.to===CU.id&&!m.read).forEach(m=>DB.upd('messages',m.id,{read:true}));
-  buildNav();renderPage();
-  setTimeout(()=>{const b=document.getElementById('msg-bubbles');if(b)b.scrollTop=b.scrollHeight},50);
-}
-function renderMsgBubbles(oid){
-  return DB.get('messages').filter(m=>(m.from===CU.id&&m.to===oid)||(m.from===oid&&m.to===CU.id)).sort((a,b)=>new Date(a.ts)-new Date(b.ts)).map(m=>'<div class="mbub '+(m.from===CU.id?'s':'r')+'">'+m.text+(m.img?'<img src="'+m.img+'" alt="image">':'')+'<div class="bt">'+fmtTime(m.ts)+'</div></div>').join('');
-}
-function sendMsg(img){
-  if(!SEL_CONV)return;
-  const input=document.getElementById('msg-input');
-  const text=img?'':input.value.trim();
-  if(!text&&!img)return;
-  DB.add('messages',{from:CU.id,to:SEL_CONV,text,ts:new Date().toISOString(),read:false,img:img||null});
-  DB.add('notifications',{userId:SEL_CONV,text:'Message de '+CU.name,read:false,ts:new Date().toISOString(),type:'message'});
-  if(input)input.value='';
-  renderPage();
-  setTimeout(()=>{const b=document.getElementById('msg-bubbles');if(b)b.scrollTop=b.scrollHeight},50);
-  updateNotifBadge();
-}
-function filterConvos(q){document.querySelectorAll('.mli').forEach(el=>{el.style.display=el.textContent.toLowerCase().includes(q.toLowerCase())?'':'none'})}
-function getMessageUnreadCount(){return DB.get('messages').filter(m=>m.to===CU.id&&!m.read).length}
-
-/* ==================== PAIEMENTS MOBILE MONEY & CARTE BANCAIRE ==================== */
-function renderPaiements(){
-  const sid=CU.schoolId;
-  let payments=DB.get('payments').filter(p=>p.schoolId===sid);
-  if(CU.role==='eleve')payments=payments.filter(p=>p.studentId===CU.id);
-  if(CU.role==='parent')payments=payments.filter(p=>p.studentId===CU.childId);
-  const totalPaid=payments.reduce((s,p)=>s+p.paid,0);const totalDue=payments.reduce((s,p)=>s+p.amount,0);
-  const canPay=CU.role==='prefet'||CU.role==='parent';
-  return `<div class="ptitle">Paiements Scolaires</div><div class="psub">${fmtMoney(totalPaid)} payes sur ${fmtMoney(totalDue)} du</div>
-  ${canPay?'<div style="margin-bottom:14px"><button class="btn btn-s btn-p" onclick="showNewPayment()"><i class="fas fa-plus"></i> Nouveau paiement</button></div>':''}
-  <div class="card"><div class="tw"><table>
-    <thead><tr><th>Eleve</th><th>Trimestre</th><th>Montant</th><th>Paye</th><th>Statut</th><th>Mode</th><th>Recu</th><th>Actions</th></tr></thead>
-    <tbody>${payments.sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)).map(p=>{
-      const stu=getUser(p.studentId);const op=OPS.find(o=>o.id===p.method);
-      const sB=p.status==='paid'?'<span class="badge bg-ok">Paye</span>':p.status==='partial'?'<span class="badge bg-w">Partiel</span>':'<span class="badge bg-d">Impaye</span>';
-      return '<tr><td>'+(stu?stu.name:'-')+'</td><td>'+p.term+'</td><td>'+fmtMoney(p.amount)+'</td><td><strong>'+fmtMoney(p.paid)+'</strong></td><td>'+sB+'</td><td>'+(op?'<span style="color:'+op.color+';font-weight:600">'+op.name+'</span>':'-')+'</td><td>'+(p.receiptNo||'-')+'</td><td>'+(p.receiptNo?'<button class="btn btn-s btn-g" onclick="showReceipt('+p.id+')"><i class="fas fa-receipt"></i></button>':'')+'</td></tr>';
-    }).join('')||'<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--mut)">Aucun paiement</td></tr>'}</tbody>
-  </table></div></div>`;
-}
-// let SEL_OP='airtel';
-function showNewPayment(){
-  const students=getSchoolStudents(CU.schoolId);
-  const sOpts=CU.role==='parent'?'<option value="'+CU.childId+'">'+(getUser(CU.childId)?.name||'Mon enfant')+'</option>':students.map(s=>'<option value="'+s.id+'">'+s.name+' ('+s.matricule+')</option>').join('');
-  showModal('Nouveau paiement',`
-    <div class="fg"><label>Eleve</label><select id="np-student">${sOpts}</select></div>
-    <div class="fg"><label>Trimestre</label><select id="np-term"><option value="T1 2025">T1 2025</option><option value="T2 2025">T2 2025</option><option value="T3 2025">T3 2025</option></select></div>
-    <div class="fg"><label>Montant du (CDF)</label><input type="number" id="np-amount" value="50000"></div>
-    <div class="fg"><label>Montant paye (CDF)</label><input type="number" id="np-paid" value="50000"></div>
-    <div class="fg"><label>Mode de paiement</label>
-      <div class="ops-grid" id="np-ops">
-        ${OPS.map((o,i)=>'<div class="op-card'+(i===0?' sel':'')+'" onclick="selectOp(\''+o.id+'\',this)"><div class="op-logo" style="color:'+o.color+'"><i class="fas '+o.icon+'"></i></div><div class="op-name">'+o.name+'</div></div>').join('')}
-        <div class="op-card" onclick="selectOp('carte',this)"><div class="op-logo" style="color:var(--p)"><i class="fas fa-credit-card"></i></div><div class="op-name">Carte bancaire</div></div>
-      </div>
-      <input type="hidden" id="np-method" value="airtel">
-    </div>
-    <div class="fg" id="np-phone-grp"><label>Numero de telephone</label><input type="tel" id="np-phone" placeholder="+243 ..."></div>
-    <div class="fg hidden" id="np-card-grp"><label>Numero de carte</label><input type="text" id="np-card" placeholder="XXXX XXXX XXXX XXXX" maxlength="19"></div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Annuler</button><button class="btn btn-p" onclick="processPayment()"><i class="fas fa-check"></i> Confirmer</button>`);
-  SEL_OP='airtel';
-}
-function selectOp(id,el){
-  SEL_OP=id;document.querySelectorAll('#np-ops .op-card').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');
-  document.getElementById('np-method').value=id;
-  document.getElementById('np-phone-grp').classList.toggle('hidden',id==='carte');
-  document.getElementById('np-card-grp').classList.toggle('hidden',id!=='carte');
-}
-function processPayment(){
-  const studentId=parseInt(document.getElementById('np-student').value);
-  const amount=parseInt(document.getElementById('np-amount').value)||0;
-  const paid=parseInt(document.getElementById('np-paid').value)||0;
-  if(paid<=0){toast('Montant invalide','er');return}
-  const method=document.getElementById('np-method').value;
-  const phone=method!=='carte'?document.getElementById('np-phone').value.trim():'';
-  const ref=genRef();const receiptNo=genReceiptNo(CU.schoolId);
-  const status=paid>=amount?'paid':paid>0?'partial':'unpaid';
-  DB.add('payments',{schoolId:CU.schoolId,studentId,amount,paid,status,term:document.getElementById('np-term').value,method,phone,ref,date:new Date().toISOString(),receiptNo});
-  const stu=getUser(studentId);
-  if(stu)DB.add('notifications',{userId:studentId,text:'Paiement de '+fmtMoney(paid)+' enregistre',read:false,ts:new Date().toISOString(),type:'payment'});
-  if(stu&&stu.parentId)DB.add('notifications',{userId:stu.parentId,text:'Paiement de '+fmtMoney(paid)+' pour '+stu.name,read:false,ts:new Date().toISOString(),type:'payment'});
-  hideModal();toast('Paiement enregistre');
-  const payId=DB.get('payments').find(p=>p.ref===ref);
-  if(payId)setTimeout(()=>showReceipt(payId.id),300);
-  renderPage();updateNotifBadge();
-}
-function showReceipt(id){
-  const p=DB.find('payments',id);if(!p)return;
-  const stu=getUser(p.studentId);const school=getSchool(p.schoolId);const op=OPS.find(o=>o.id===p.method);
-  showModal('Recu de paiement',`
-    <div style="display:flex;justify-content:center"><div class="receipt">
-      <h3><i class="fas fa-graduation-cap"></i> ${school?school.name:''}</h3>
-      <div class="r-sub">${school?school.address:''}</div><hr>
-      <div style="font-size:14px;font-weight:700;margin:8px 0">RECU DE PAIEMENT</div>
-      <div class="r-row"><span>N° Recu</span><strong>${p.receiptNo}</strong></div>
-      <div class="r-row"><span>Date</span><span>${fmtDate(p.date)}</span></div>
-      <div class="r-row"><span>Eleve</span><strong>${stu?stu.name:'-'}</strong></div>
-      <div class="r-row"><span>Matricule</span><span>${stu?stu.matricule:'-'}</span></div>
-      <div class="r-row"><span>Trimestre</span><span>${p.term}</span></div><hr>
-      <div class="r-row"><span>Montant du</span><span>${fmtMoney(p.amount)}</span></div>
-      <div class="r-row"><span>Paye</span><span>${fmtMoney(p.paid)}</span></div>
-      <div class="r-row"><span>Reste</span><span>${fmtMoney(p.amount-p.paid)}</span></div><hr>
-      <div class="r-total">${fmtMoney(p.paid)}</div>
-      ${op?'<div class="r-ops" style="color:'+op.color+'"><i class="fas '+op.icon+'"></i> '+op.name+'</div>':''}
-      <div style="font-size:10px;color:var(--mut);margin-top:12px">Ref: ${p.ref}</div>
-    </div></div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Fermer</button><button class="btn btn-p" onclick="printReceipt(${id})"><i class="fas fa-print"></i> Imprimer</button>`);
-}
-function printReceipt(id){
-  const p=DB.find('payments',id);if(!p)return;
-  const stu=getUser(p.studentId);const school=getSchool(p.schoolId);const op=OPS.find(o=>o.id===p.method);
-  const w=window.open('','','width=400');
-  w.document.write('<html><head><title>Recu</title><style>body{font-family:sans-serif;padding:20px;text-align:center}h3{color:#1B4332}hr{border:none;border-top:1px dashed #ccc;margin:12px 0}.r{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}.total{font-size:20px;font-weight:800;color:#1B4332;margin:8px 0}</style></head><body><h3>'+(school?school.name:'')+'</h3><p style="font-size:11px;color:#666">'+(school?school.address:'')+'</p><hr><p style="font-weight:700">RECU DE PAIEMENT</p><div class="r"><span>N°</span><strong>'+p.receiptNo+'</strong></div><div class="r"><span>Date</span><span>'+fmtDate(p.date)+'</span></div><div class="r"><span>Eleve</span><strong>'+(stu?stu.name:'')+'</strong></div><div class="r"><span>Matricule</span><span>'+(stu?stu.matricule:'')+'</span></div><div class="r"><span>Trimestre</span><span>'+p.term+'</span></div><hr><div class="r"><span>Du</span><span>'+fmtMoney(p.amount)+'</span></div><div class="r"><span>Paye</span><span>'+fmtMoney(p.paid)+'</span></div><div class="r"><span>Reste</span><span>'+fmtMoney(p.amount-p.paid)+'</span></div><div class="total">'+fmtMoney(p.paid)+'</div>'+(op?'<p style="color:'+op.color+';font-weight:600">'+op.name+'</p>':'')+'<p style="font-size:10px;color:#999;margin-top:16px">Ref: '+p.ref+'</p></body></html>');
-  w.document.close();w.print();
-}
-
-/* ==================== GESTION DES POINTS ==================== */
-function renderPoints(){
-  const sid=CU.schoolId;
-  if(CU.role==='eleve'){
-    const pts=DB.get('points').filter(p=>p.studentId===CU.id).sort((a,b)=>new Date(b.date)-new Date(a.date));
-    const total=pts.reduce((s,p)=>s+p.value,0);
-    return `<div class="ptitle">Mes Points</div><div class="psub">Total: <strong style="color:${total>=0?'var(--ok)':'var(--err)'}">${total} points</strong></div>
-    <div class="card"><div class="ch"><h3>Historique</h3></div><div class="cb"><table><thead><tr><th>Date</th><th>Categorie</th><th>Valeur</th><th>Commentaire</th><th>Enseignant</th></tr></thead><tbody>${pts.map(p=>{const t=getUser(p.teacherId);return '<tr><td>'+fmtDate(p.date)+'</td><td><span class="badge bg-i">'+p.category+'</span></td><td><strong style="color:'+(p.value>=0?'var(--ok)':'var(--err)')+'">'+(p.value>0?'+':'')+p.value+'</strong></td><td>'+(p.comment||'-')+'</td><td>'+(t?t.name:'-')+'</td></tr>'}).join('')||'<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--mut)">Aucun point</td></tr>'}</tbody></table></div></div>`;
-  }
-  if(CU.role==='parent'){
-    const child=getUser(CU.childId);if(!child)return '<div class="empty-s"><p>Aucun enfant associe</p></div>';
-    const pts=DB.get('points').filter(p=>p.studentId===child.id).sort((a,b)=>new Date(b.date)-new Date(a.date));
-    const total=pts.reduce((s,p)=>s+p.value,0);
-    return `<div class="ptitle">Points de ${child.name}</div><div class="psub">Total: <strong style="color:${total>=0?'var(--ok)':'var(--err)'}">${total} points</strong></div>
-    <div class="card"><div class="cb"><table><thead><tr><th>Date</th><th>Categorie</th><th>Valeur</th><th>Commentaire</th></tr></thead><tbody>${pts.map(p=>'<tr><td>'+fmtDate(p.date)+'</td><td><span class="badge bg-i">'+p.category+'</span></td><td><strong style="color:'+(p.value>=0?'var(--ok)':'var(--err)')+'">'+(p.value>0?'+':'')+p.value+'</strong></td><td>'+(p.comment||'-')+'</td></tr>').join('')||'<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--mut)">Aucun point</td></tr>'}</tbody></table></div></div>`;
-  }
-  const students=getSchoolStudents(sid);
-  const canAdd=CU.role==='enseignant';
-  return `<div class="ptitle">Gestion des Points</div><div class="psub">${students.length} eleves</div>
-  ${canAdd?'<div style="margin-bottom:14px"><button class="btn btn-s btn-p" onclick="showAddPoints()"><i class="fas fa-plus"></i> Attribuer des points</button></div>':''}
-  <div class="pt-grid">${students.map(s=>{
-    const sPts=DB.get('points').filter(p=>p.studentId===s.id);
-    const total=sPts.reduce((a,p)=>a+p.value,0);
-    const cats={comportement:0,participation:0,devoir:0,examen:0};
-    sPts.forEach(p=>{if(cats.hasOwnProperty(p.category))cats[p.category]+=p.value});
-    return '<div class="pt-card"><div class="pt-av">'+initials(s.name)+'</div><div style="flex:1"><div style="font-size:13px;font-weight:600">'+s.name+'</div><div style="font-size:11px;color:var(--mut)">'+(s.class||'')+' | '+(s.matricule||'')+'</div><div style="display:flex;gap:8px;margin-top:6px;font-size:10px"><span style="color:'+(cats.comportement>=0?'var(--ok)':'var(--err)')+'" title="Comportement"><i class="fas fa-heart"></i> '+cats.comportement+'</span><span style="color:var(--inf)" title="Participation"><i class="fas fa-hand"></i> '+cats.participation+'</span><span style="color:var(--a)" title="Devoir"><i class="fas fa-book"></i> '+cats.devoir+'</span><span style="color:var(--warn)" title="Examen"><i class="fas fa-pen"></i> '+cats.examen+'</span></div></div><div class="pt-val">'+total+'</div></div>';
-  }).join('')}</div>`;
-}
-function showAddPoints(){
-  const students=getSchoolStudents(CU.schoolId);
-  showModal('Attribuer des points',`
-    <div class="fg"><label>Eleve</label><select id="ap-student">${students.map(s=>'<option value="'+s.id+'">'+s.name+' ('+s.class+')</option>').join('')}</select></div>
-    <div class="fg"><label>Categorie</label><select id="ap-cat"><option value="comportement">Comportement</option><option value="participation">Participation</option><option value="devoir">Devoir</option><option value="examen">Examen</option></select></div>
-    <div class="fg"><label>Valeur (+ ou -)</label><input type="number" id="ap-val" value="1" min="-10" max="10"></div>
-    <div class="fg"><label>Commentaire</label><input id="ap-comment" placeholder="Raison..."></div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Annuler</button><button class="btn btn-p" onclick="savePoints()">Attribuer</button>`);
-}
-function savePoints(){
-  const studentId=parseInt(document.getElementById('ap-student').value);
-  const value=parseInt(document.getElementById('ap-val').value)||0;
-  if(value===0){toast('Valeur ne peut etre 0','er');return}
-  const cat=document.getElementById('ap-cat').value;
-  DB.add('points',{studentId,teacherId:CU.id,category:cat,value,comment:document.getElementById('ap-comment').value.trim(),date:new Date().toISOString()});
-  DB.add('notifications',{userId:studentId,text:(value>0?'+':'')+value+' points ('+cat+')',read:false,ts:new Date().toISOString(),type:'points'});
-  hideModal();toast('Points attribues');renderPage();updateNotifBadge();
-}
-
-/* ==================== GESTION UTILISATEURS (ADMIN = PREFET) ==================== */
-function renderUtilisateurs(){
-  if(CU.role!=='prefet')return '<div class="empty-s"><i class="fas fa-lock"></i><p>Acces reserve a l\'admin</p></div>';
-  const users=getSchoolUsers(CU.schoolId).filter(u=>u.role!=='coordinateur');
-  return `<div class="ptitle">Gestion des Utilisateurs</div><div class="psub">${users.length} utilisateurs</div>
-  <div style="margin-bottom:14px;display:flex;gap:8px">
-    <button class="btn btn-s btn-p" onclick="showAddUser()"><i class="fas fa-plus"></i> Ajouter</button>
-    <button class="btn btn-s btn-g" onclick="showSchoolCode()"><i class="fas fa-key"></i> Code d'etablissement</button>
-  </div>
-  <div class="card"><div class="tw"><table>
-    <thead><tr><th>Nom</th><th>Email</th><th>Role</th><th>Telephone</th><th>Statut</th><th>Actions</th></tr></thead>
-    <tbody>${users.map(u=>'<tr><td><strong>'+u.name+'</strong></td><td>'+u.email+'</td><td><span class="badge bg-i">'+ROLES[u.role]+'</span></td><td>'+(u.phone||'-')+'</td><td>'+(u.active?'<span class="badge bg-ok">Actif</span>':'<span class="badge bg-d">Inactif</span>')+'</td><td><button class="btn btn-s btn-g" onclick="toggleUserStatus('+u.id+')"><i class="fas fa-'+(u.active?'ban':'check')+'"></i></button>'+(u.role!=='prefet'?' <button class="btn btn-s btn-d" onclick="removeUser('+u.id+')"><i class="fas fa-trash"></i></button>':'')+'</td></tr>').join('')}</tbody>
-  </table></div></div>`;
-}
-function showAddUser(){
-  showModal('Ajouter un utilisateur',`
-    <div class="fg"><label>Nom</label><input id="nu-name"></div>
-    <div class="fg"><label>Email</label><input type="email" id="nu-email"></div>
-    <div class="fg"><label>Telephone</label><input type="tel" id="nu-phone"></div>
-    <div class="fg"><label>Role</label><select id="nu-role"><option value="enseignant">Enseignant</option><option value="eleve">Eleve</option><option value="parent">Parent</option></select></div>
-    <div class="fg"><label>Mot de passe initial</label><input type="password" id="nu-pass" value="ChangeMe@2025"></div>
-  `,`<button class="btn btn-g" onclick="hideModal()">Annuler</button><button class="btn btn-p" onclick="saveNewUser()">Creer</button>`);
-}
-function saveNewUser(){
-  const name=document.getElementById('nu-name').value.trim();if(!name){toast('Nom requis','er');return}
-  const email=document.getElementById('nu-email').value.trim();if(!email){toast('Email requis','er');return}
-  if(DB.get('users').find(u=>u.email.toLowerCase()===email.toLowerCase())){toast('Email deja utilise','er');return}
-  const role=document.getElementById('nu-role').value;
-  const newUser={name,email,pw:document.getElementById('nu-pass').value,role,schoolId:CU.schoolId,phone:document.getElementById('nu-phone').value.trim(),active:true};
-  if(role==='eleve'){newUser.class='Nouveau';newUser.matricule='XX-2025-'+String(DB.get('users').filter(u=>u.role==='eleve').length+1).padStart(3,'0');newUser.dob='';newUser.parentId=null}
-  if(role==='parent')newUser.childId=null;
-  DB.add('users',newUser);hideModal();toast('Utilisateur cree');renderPage();
-}
-function toggleUserStatus(id){DB.upd('users',id,{active:!getUser(id).active});toast('Statut modifie');renderPage()}
-function removeUser(id){if(!confirm('Supprimer cet utilisateur ?'))return;DB.rm('users',id);toast('Utilisateur supprime');renderPage()}
-function showSchoolCode(){
-  const s=getSchool(CU.schoolId);
-  showModal('Code d\'etablissement',`<div style="text-align:center;padding:20px"><p style="font-size:13px;color:var(--mut);margin-bottom:12px">Partagez ce code pour que de nouveaux membres rejoignent :</p><div style="font-size:28px;font-weight:800;letter-spacing:4px;color:var(--p);background:var(--bg);padding:16px 24px;border-radius:12px;border:2px dashed var(--pl)">${s?s.code:'-'}</div><p style="font-size:11px;color:var(--mut);margin-top:12px">${s?s.name:''}</p></div>`);
-}
-
-/* ==================== ASSISTANT IA RENFORCE (PAR ROLE) ==================== */
-function renderAssistant(){
-  const chatKey='ai_'+CU.id;
-  const chats=DB.get('aiChats');
-  let history=chats[chatKey]||[];
-  const school=getSchool(CU.schoolId);
-  const students=getSchoolStudents(CU.schoolId);
-  const teachers=getSchoolTeachers(school?school.id:0);
-  const payments=DB.get('payments').filter(p=>p.schoolId===CU.schoolId);
-  const pts=DB.get('points').filter(p=>students.some(s=>s.id===p.studentId));
-
-  // Sidebar stats selon le role
-  let sideHtml='';
-  if(CU.role==='coordinateur'){
-    const reports=DB.get('reports').filter(r=>r.schoolId===CU.schoolId);
-    sideHtml=`<div class="aic"><h4><i class="fas fa-building-columns"></i> Vue Coordination</h4>
-      <div class="aic-sr"><span>Etablissements</span><span class="v">${DB.get('schools').length}</span></div>
-      <div class="aic-sr"><span>Rapports recus</span><span class="v">${reports.filter(r=>r.status==='depose_coord'||r.status==='recu_coord').length}</span></div>
-      <div class="aic-sr"><span>Rapports valides</span><span class="v">${reports.filter(r=>r.status==='valide').length}</span></div>
-      <div class="aic-sr"><span>Communications envoyees</span><span class="v">${DB.get('communications').filter(c=>c.authorId===CU.id).length}</span></div>
-    </div>`;
-  } else if(CU.role==='prefet'){
-    const reports=DB.get('reports').filter(r=>r.schoolId===CU.schoolId);
-    sideHtml=`<div class="aic"><h4><i class="fas fa-shield-halved"></i> Vue Prefet</h4>
-      <div class="aic-sr"><span>Eleves</span><span class="v">${students.length}</span></div>
-      <div class="aic-sr"><span>Enseignants</span><span class="v">${teachers.length}</span></div>
-      <div class="aic-sr"><span>Rapports a traiter</span><span class="v">${reports.filter(r=>r.toId===CU.id&&r.status!=='valide'&&r.status!=='rejete').length}</span></div>
-      <div class="aic-sr"><span>Paiements en attente</span><span class="v">${payments.filter(p=>p.status==='unpaid').length}</span></div>
-    </div>`;
-  } else if(CU.role==='enseignant'){
-    sideHtml=`<div class="aic"><h4><i class="fas fa-chalkboard-user"></i> Vue Enseignant</h4>
-      <div class="aic-sr"><span>Mes eleves</span><span class="v">${students.length}</span></div>
-      <div class="aic-sr"><span>Points attribues</span><span class="v">${pts.filter(p=>p.teacherId===CU.id).length}</span></div>
-      <div class="aic-sr"><span>Rapports en cours</span><span class="v">${DB.get('reports').filter(r=>r.authorId===CU.id&&r.status==='brouillon').length}</span></div>
-    </div>`;
-  } else if(CU.role==='eleve'){
-    const myPts=pts.filter(p=>p.studentId===CU.id).reduce((s,p)=>s+p.value,0);
-    sideHtml=`<div class="aic"><h4><i class="fas fa-user-graduate"></i> Mon Profil</h4>
-      <div class="aic-sr"><span>Mes points</span><span class="v">${myPts}</span></div>
-      <div class="aic-sr"><span>Classe</span><span class="v">${CU.class||'-'}</span></div>
-      <div class="aic-sr"><span>Matricule</span><span class="v">${CU.matricule||'-'}</span></div>
-    </div>`;
-  } else if(CU.role==='parent'){
-    const child=getUser(CU.childId);
-    const childPts=child?pts.filter(p=>p.studentId===child.id).reduce((s,p)=>s+p.value,0):0;
-    sideHtml=`<div class="aic"><h4><i class="fas fa-people-roof"></i> Vue Parent</h4>
-      <div class="aic-sr"><span>Mon enfant</span><span class="v">${child?child.name:'-'}</span></div>
-      <div class="aic-sr"><span>Points de l'enfant</span><span class="v">${childPts}</span></div>
-      <div class="aic-sr"><span>Paiements</span><span class="v">${payments.filter(p=>p.studentId===CU.childId).length}</span></div>
-    </div>`;
-  }
-
-  // Suggestions selon le role
-  let suggestions=[];
-  if(CU.role==='coordinateur')suggestions=['Etat des rapports','Communications envoyees','Rapports a valider','Statistiques globales'];
-  else if(CU.role==='prefet')suggestions=['Rapports a traiter','Paiements en attente','Effectifs de l\'etablissement','Deposer un rapport'];
-  else if(CU.role==='enseignant')suggestions=['Mes rapports','Gestion des points','Etat des eleves','Deposer un rapport'];
-  else if(CU.role==='eleve')suggestions=['Mes points','Mes paiements','Mes messages','Communications'];
-  else if(CU.role==='parent')suggestions=['Points de mon enfant','Paiements','Communications','Messages'];
-
-  const bubblesHtml=history.map(h=>'<div class="ab '+(h.role==='user'?'u':'b')+'">'+h.text+'<div class="at">'+fmtTime(h.ts)+'</div></div>').join('');
-
-  return `<div class="ai-lay">
-    <div class="ai-c">
-      <div class="mc-h"><span><i class="fas fa-robot" style="color:var(--a);margin-right:6px"></i>Assistant IA — ${ROLES[CU.role]}</span></div>
-      <div class="ai-cb" id="ai-bubbles">
-        <div class="ab b"><strong>Bonjour ${CU.name.split(' ')[0]} !</strong><br>Je suis l'assistant digital d'EduGest adapte a votre role de ${ROLES[CU.role]}. Je peux vous aider avec les informations de ${(school?school.name:'votre etablissement')}. Que souhaitez-vous savoir ?
-          <div class="ai-sug">${suggestions.map(s=>'<button class="ai-sb" onclick="askAI(\''+s.replace(/'/g,"\\'")+'\')">'+s+'</button>').join('')}</div>
+function showSchoolCodes() {
+    showModal('📋 Codes d\'accès des écoles', `
+        <div class="table-responsive">
+            <table class="table table-edugest">
+                <thead><tr><th>École</th><th>Code</th><th>Mot de passe</th></tr></thead>
+                <tbody>
+                    ${DB.schoolAccounts.map(s => `
+                        <tr>
+                            <td><strong>${s.school_name}</strong></td>
+                            <td><code style="background:#eef2ff;padding:2px 8px;border-radius:4px;font-weight:700;color:var(--primary);">${s.code}</code></td>
+                            <td><code style="background:#fef3c7;padding:2px 8px;border-radius:4px;font-weight:700;color:#92400e;">${s.password}</code></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
         </div>
-        ${bubblesHtml}
-      </div>
-      <div class="mc-i">
-        <input type="text" id="ai-input" placeholder="Posez votre question..." onkeydown="if(event.key==='Enter')sendAI()">
-        <button class="send-btn" onclick="sendAI()"><i class="fas fa-paper-plane"></i></button>
-      </div>
-    </div>
-    <div class="ai-s">${sideHtml}</div>
-  </div>`;
-}
-function askAI(q){document.getElementById('ai-input').value=q;sendAI()}
-function sendAI(){
-  const input=document.getElementById('ai-input');if(!input)return;
-  const q=input.value.trim();if(!q)return;input.value='';
-  const chatKey='ai_'+CU.id;
-  const chats=DB.get('aiChats');
-  if(!chats[chatKey])chats[chatKey]=[];
-  chats[chatKey].push({role:'user',text:q,ts:new Date().toISOString()});
-  const answer=generateAIResponse(q);
-  chats[chatKey].push({role:'bot',text:answer,ts:new Date().toISOString()});
-  DB.set('aiChats',chats);
-  renderPage();
-  setTimeout(()=>{const b=document.getElementById('ai-bubbles');if(b)b.scrollTop=b.scrollHeight},50);
-}
-function generateAIResponse(q){
-  const ql=q.toLowerCase();
-  const sid=CU.schoolId;const school=getSchool(sid);
-  const students=getSchoolStudents(sid);const teachers=getSchoolTeachers(sid);
-  const payments=DB.get('payments').filter(p=>p.schoolId===sid);
-  const pts=DB.get('points').filter(p=>students.some(s=>s.id===p.studentId));
-  const reports=DB.get('reports').filter(r=>r.schoolId===sid);
-  const comms=DB.get('communications').filter(c=>c.schoolId===sid&&c.scope==='ecole');
-  const totalPaid=payments.reduce((s,p)=>s+p.paid,0);const totalDue=payments.reduce((s,p)=>s+p.amount,0);
-
-  if(CU.role==='coordinateur'){
-    // Le coordinateur voit la vue globale, les rapports venant des prefets
-    if(ql.includes('rapport')){const pending=reports.filter(r=>r.status==='depose_coord'||r.status==='recu_coord');const validated=reports.filter(r=>r.status==='valide');return `<strong>Rapports pour ${school?school.name:''}</strong><br><br>- En attente de validation : <strong>${pending.length}</strong><br>- Validés : <strong>${validated.length}</strong><br>- Rejetés : <strong>${reports.filter(r=>r.status==='rejete').length}</strong><br><br>${pending.length?'Derniers rapports en attente :<br>'+pending.slice(0,3).map(r=>'- '+r.title+' ('+fmtDate(r.createdAt)+')').join('<br>'):'Aucun rapport en attente.'}`}
-    if(ql.includes('communication')){const sent=DB.get('communications').filter(c=>c.authorId===CU.id);return `<strong>Vos communications</strong><br><br>Vous avez envoyé <strong>${sent.length}</strong> communications.<br>${sent.length?'Dernières :<br>'+sent.slice(0,3).map(c=>'- '+c.title+' ('+(c.scope==='prefets'?'Vers prefets':'Ecole')+')').join('<br>'):'Aucune communication envoyée.'}`}
-    if(ql.includes('statistique')||ql.includes('global')){return `<strong>Statistiques globales</strong><br><br>- Etablissements : ${DB.get('schools').length}<br>- Total eleves (tous etablissements) : ${DB.get('users').filter(u=>u.role==='eleve').length}<br>- Rapports totaux : ${reports.length}<br>- Communications : ${DB.get('communications').length}`}
-    if(ql.includes('valider')){const toVal=reports.filter(r=>r.status==='recu_coord');return toVal.length?'<strong>Rapports a valider :</strong><br><br>'+toVal.map(r=>'- '+r.title+' par '+(getUser(r.authorId)?.name||'-')).join('<br>'):'Aucun rapport a valider actuellement.'}
-  }
-  if(CU.role==='prefet'){
-    // Le prefet gere l'interne, depose vers la coordination
-    if(ql.includes('rapport')){const toRecv=reports.filter(r=>r.toId===CU.id&&r.status==='depose_prefet');const toFwd=reports.filter(r=>r.status==='recu_prefet');return `<strong>Rapports</strong><br><br>- A recevoir des enseignants : <strong>${toRecv.length}</strong><br>- A transmettre a la coordination : <strong>${toFwd.length}</strong><br>- Deposes a la coordination : <strong>${reports.filter(r=>r.status==='depose_coord').length}</strong><br><br>${toRecv.length?'En attente :<br>'+toRecv.map(r=>'- '+r.title).join('<br>'):'Rien en attente.'}`}
-    if(ql.includes('paiement')){const unpaid=payments.filter(p=>p.status==='unpaid');return `<strong>Paiements - ${school?school.name:''}</strong><br><br>- Total du : ${fmtMoney(totalDue)}<br>- Total paye : ${fmtMoney(totalPaid)}<br>- Taux de recouvrement : ${totalDue?((totalPaid/totalDue)*100).toFixed(1):0}%<br>- Impayes : <strong>${unpaid.length}</strong>${unpaid.length?'<br><br>Eleves impayes :<br>'+unpaid.map(p=>'- '+(getUser(p.studentId)?.name||'-')+' ('+p.term+')').join('<br>'):''}`}
-    if(ql.includes('effectif')){return `<strong>Effectifs - ${school?school.name:''}</strong><br><br>- Eleves : <strong>${students.length}</strong><br>- Enseignants : <strong>${teachers.length}</strong><br>- Parents : <strong>${DB.get('users').filter(u=>u.schoolId===sid&&u.role==='parent').length}</strong>`}
-    if(ql.includes('deposer')){return 'Pour deposer un rapport, allez dans la section <strong>Rapports</strong> puis cliquez sur <strong>Nouveau rapport</strong> ou <strong>Generer un rapport</strong> pour un rapport automatique. Les rapports sont d\'abord enregistres en brouillon, puis vous pouvez les deposer.'}
-  }
-  if(CU.role==='enseignant'){
-    // L'enseignant depose vers le prefet, gere les points
-    if(ql.includes('rapport')){const my=reports.filter(r=>r.authorId===CU.id);return `<strong>Mes rapports</strong><br><br>- Brouillons : <strong>${my.filter(r=>r.status==='brouillon').length}</strong><br>- Deposes au prefet : <strong>${my.filter(r=>r.status==='depose_prefet').length}</strong><br>- Recus par prefet : <strong>${my.filter(r=>r.status==='recu_prefet').length}</strong><br>- Valides : <strong>${my.filter(r=>r.status==='valide').length}</strong>`}
-    if(ql.includes('point')){const myPts=pts.filter(p=>p.teacherId===CU.id);return `<strong>Mes attributions de points</strong><br><br>Vous avez attribue <strong>${myPts.length}</strong> fois des points.<br>- Positifs : ${myPts.filter(p=>p.value>0).length}<br>- Negatifs : ${myPts.filter(p=>p.value<0).length}<br><br>Categories :<br>- Comportement : ${myPts.filter(p=>p.category==='comportement').length}<br>- Participation : ${myPts.filter(p=>p.category==='participation').length}<br>- Devoirs : ${myPts.filter(p=>p.category==='devoir').length}<br>- Examens : ${myPts.filter(p=>p.category==='examen').length}`}
-    if(ql.includes('eleve')){return `<strong>Mes eleves - ${school?school.name:''}</strong><br><br>${students.slice(0,8).map(s=>{const sp=pts.filter(p=>p.studentId===s.id).reduce((a,p)=>a+p.value,0);return '- '+s.name+' ('+s.class+') : <strong>'+sp+' pts</strong>'}).join('<br>')}${students.length>8?'<br>... et '+(students.length-8)+' autres':''}`}
-  }
-  if(CU.role==='eleve'){
-    if(ql.includes('point')){const myPts=pts.filter(p=>p.studentId===CU.id);const total=myPts.reduce((s,p)=>s+p.value,0);return `<strong>Mes points : ${total}</strong><br><br>Detaill :<br>${myPts.map(p=>'- '+p.category+' : '+(p.value>0?'+':'')+p.value+' ('+p.comment+') - '+fmtDate(p.date)).join('<br>')||'Aucun point attribue.'}`}
-    if(ql.includes('paiement')){const myPay=payments.filter(p=>p.studentId===CU.id);return `<strong>Mes paiements</strong><br><br>${myPay.map(p=>'- '+p.term+' : '+fmtMoney(p.paid)+' / '+fmtMoney(p.amount)+' ('+p.status+')</p>').join('<br>')||'Aucun paiement enregistre.'}`}
-    if(ql.includes('message')){const myMsgs=DB.get('messages').filter(m=>m.to===CU.id||m.from===CU.id);return `Vous avez <strong>${myMsgs.length}</strong> messages. Allez dans la section <strong>Messages</strong> pour les consulter.`}
-    if(ql.includes('communication')){return comms.length?'<strong>Communications récentes :</strong><br><br>'+comms.slice(0,3).map(c=>'- '+c.title+' ('+fmtDate(c.createdAt)+')').join('<br>'):'Aucune communication récente.'}
-  }
-  if(CU.role==='parent'){
-    const child=getUser(CU.childId);
-    if(ql.includes('point')||ql.includes('enfant')){if(!child)return 'Aucun enfant associe a votre compte.';const childPts=pts.filter(p=>p.studentId===child.id);const total=childPts.reduce((s,p)=>s+p.value,0);return `<strong>Points de ${child.name} : ${total}</strong><br><br>Detaill :<br>${childPts.map(p=>'- '+p.category+' : '+(p.value>0?'+':'')+p.value+' - '+p.comment).join('<br>')||'Aucun point.'}`}
-    if(ql.includes('paiement')){if(!child)return 'Aucun enfant associe.';const childPay=payments.filter(p=>p.studentId===child.id);return `<strong>Paiements de ${child.name}</strong><br><br>${childPay.map(p=>'- '+p.term+' : '+fmtMoney(p.paid)+' / '+fmtMoney(p.amount)+' ('+p.status+')').join('<br>')||'Aucun paiement.'}`}
-    if(ql.includes('communication')){return comms.length?'<strong>Communications :</strong><br><br>'+comms.slice(0,3).map(c=>'- '+c.title).join('<br>'):'Aucune communication.'}
-  }
-  // Reponse generique
-  return `Je suis l'assistant de <strong>${school?school.name:'votre etablissement'}</strong>. En tant que <strong>${ROLES[CU.role]}</strong>, vous pouvez me poser des questions sur :<br><br>${CU.role==='coordinateur'?'- Les rapports des prefets<br>- Les communications<br>- Les statistiques globales':CU.role==='prefet'?'- Les rapports a traiter/transmettre<br>- Les paiements<br>- Les effectifs':CU.role==='enseignant'?'- Mes rapports<br>- La gestion des points<br>- Les eleves':'- Mes points<br>- Mes paiements<br>- Les communications'}<br><br>Essayez de cliquer sur les suggestions ci-dessus !`;
+    `, null);
 }
 
-/* ==================== PARAMETRES ==================== */
-function renderParametres(){
-  const school=getSchool(CU.schoolId);
-  return `<div class="ptitle">Parametres</div><div class="psub">Configuration de votre compte</div>
-  <div class="set-grid">
-    <div class="set-card">
-      <h3><i class="fas fa-user"></i> Profil</h3>
-      <div class="set-row"><label>Nom</label><input type="text" id="set-name" value="${CU.name}"></div>
-      <div class="set-row"><label>Email</label><input type="text" value="${CU.email}" disabled style="opacity:.6"></div>
-      <div class="set-row"><label>Telephone</label><input type="text" id="set-phone" value="${CU.phone||''}"></div>
-      <div class="set-row"><label>Role</label><span class="badge bg-i">${ROLES[CU.role]}</span></div>
-      <div class="set-row"><label>Etablissement</label><span style="font-weight:600">${school?school.name:'-'}</span></div>
-      <div style="margin-top:14px"><button class="btn btn-s btn-p" onclick="saveProfile()"><i class="fas fa-save"></i> Enregistrer</button></div>
-    </div>
-    <div class="set-card">
-      <h3><i class="fas fa-lock"></i> Securite</h3>
-      <div class="set-row"><label>Ancien mot de passe</label><input type="password" id="set-oldpw"></div>
-      <div class="set-row"><label>Nouveau mot de passe</label><input type="password" id="set-newpw"></div>
-      <div class="set-row"><label>Confirmer</label><input type="password" id="set-newpw2"></div>
-      <div style="margin-top:14px"><button class="btn btn-s btn-a" onclick="changePassword()"><i class="fas fa-key"></i> Changer le mot de passe</button></div>
-    </div>
-    <div class="set-card">
-      <h3><i class="fas fa-info-circle"></i> A propos</h3>
-      <div class="set-row"><label>Application</label><span>EduGest Pro</span></div>
-      <div class="set-row"><label>Version</label><span>2.0.0</span></div>
-      <div class="set-row"><label>Periode</label><span>2025-2026</span></div>
-      <div class="set-row"><label>Donnees</label><span>Stockees localement</span></div>
-    </div>
-    <div class="set-card">
-      <h3><i class="fas fa-database"></i> Donnees</h3>
-      <div class="set-row"><label>Stockage</label><span>${(new Blob([localStorage.getItem(DB._k)||'']).size/1024).toFixed(1)} KB</span></div>
-      <div style="margin-top:14px;display:flex;gap:8px">
-        <button class="btn btn-s btn-g" onclick="exportData()"><i class="fas fa-download"></i> Exporter</button>
-        <button class="btn btn-s btn-d" onclick="if(confirm('Reinitialiser toutes les donnees ?')){DB.reset();location.reload()}"><i class="fas fa-trash"></i> Reinitialiser</button>
-      </div>
-    </div>
-  </div>`;
-}
-function saveProfile(){
-  DB.upd('users',CU.id,{name:document.getElementById('set-name').value.trim(),phone:document.getElementById('set-phone').value.trim()});
-  CU=getUser(CU.id);document.getElementById('u-av').textContent=initials(CU.name);document.getElementById('u-nm').textContent=CU.name;
-  toast('Profil mis a jour');
-}
-function changePassword(){
-  const old=document.getElementById('set-oldpw').value;const np=document.getElementById('set-newpw').value;const np2=document.getElementById('set-newpw2').value;
-  if(old!==CU.pw){toast('Ancien mot de passe incorrect','er');return}
-  if(np!==np2){toast('Les mots de passe ne correspondent pas','er');return}
-  if(np.length<8){toast('Minimum 8 caracteres','er');return}
-  DB.upd('users',CU.id,{pw:np});CU=getUser(CU.id);
-  document.getElementById('set-oldpw').value='';document.getElementById('set-newpw').value='';document.getElementById('set-newpw2').value='';
-  toast('Mot de passe change');
-}
-function exportData(){
-  const data=localStorage.getItem(DB._k)||'{}';
-  const blob=new Blob([data],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='edugest_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();
-  URL.revokeObjectURL(url);toast('Donnees exportees');
+function showParentCodes() {
+    showModal('👨‍👩‍👧‍👦 Codes d\'accès des parents', `
+        <div class="table-responsive">
+            <table class="table table-edugest">
+                <thead><tr><th>Parent</th><th>Code</th><th>Mot de passe</th><th>Enfants</th></tr></thead>
+                <tbody>
+                    ${DB.parentAccounts.map(p => `
+                        <tr>
+                            <td><strong>${p.name}</strong></td>
+                            <td><code style="background:#fdf2f8;padding:2px 8px;border-radius:4px;font-weight:700;color:var(--parent-color);">${p.code}</code></td>
+                            <td><code style="background:#fef3c7;padding:2px 8px;border-radius:4px;font-weight:700;color:#92400e;">${p.password}</code></td>
+                            <td>${p.children_ids.map(id => {
+                                const child = DB.students.find(s => s.id === id);
+                                return child ? `${child.first_name} ${child.last_name}` : 'N/A';
+                            }).join(', ')}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `, null);
 }
 
-/* ==================== UPLOAD D'IMAGE ==================== */
-function handleImgUpload(e){
-  const file=e.target.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=function(ev){
-    const base64=ev.target.result;
-    if(IMG_CB){IMG_CB(base64);IMG_CB=null}
-  };
-  reader.readAsDataURL(file);
-  e.target.value='';
+// ============================================================
+// 4. INITIALISATION ET NAVIGATION
+// ============================================================
+
+function initApp(name, role, avatar, color = '#4F46E5') {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('userName').textContent = name;
+    document.getElementById('userRole').textContent = role;
+    document.getElementById('userAvatar').textContent = avatar;
+    document.getElementById('userAvatar').style.background = `linear-gradient(135deg, ${color}, ${color}dd)`;
+
+    const isAdmin = role === 'Admin';
+    const isParent = role === 'Parent';
+
+    document.getElementById('menuSchools').style.display = isAdmin ? 'flex' : 'none';
+    document.getElementById('menuParents').style.display = isAdmin ? 'flex' : 'none';
+    document.getElementById('menuMyChildren').style.display = isParent ? 'flex' : 'none';
+    document.getElementById('adminMenuLabel').style.display = isAdmin ? 'block' : 'none';
+
+    navigateTo('dashboard');
 }
 
-/* ==================== LANGUE ==================== */
-function setLang(lang){
-  document.querySelectorAll('.lang-sw button').forEach(b=>b.classList.remove('act'));
-  event.target.classList.add('act');
-  toast('Langue '+lang.toUpperCase()+' (bientot disponible)','in');
+function navigateTo(page) {
+    currentPage = page;
+    document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById('section-' + page);
+    if (target) target.classList.add('active');
+    
+    const titles = {
+        dashboard: 'Tableau de bord <small>Aperçu général</small>',
+        students: 'Étudiants <small>Gestion des étudiants</small>',
+        myChildren: 'Mes Enfants <small>Suivi de mes enfants</small>',
+        payments: 'Paiements <small>Gestion des paiements</small>',
+        messages: 'Messages <small>Messagerie scolaire</small>',
+        schools: 'Écoles <small>Gestion des écoles</small>',
+        parents: 'Parents <small>Gestion des parents</small>',
+        teachers: 'Enseignants <small>Gestion des enseignants</small>',
+        classes: 'Classes <small>Gestion des classes</small>',
+        reports: 'Rapports <small>Génération de rapports statistiques</small>',
+        settings: 'Paramètres <small>Configuration du système</small>'
+    };
+    document.getElementById('pageTitle').innerHTML = titles[page] || page;
+    
+    document.querySelectorAll('.sidebar-menu .nav-link').forEach(link => {
+        link.classList.toggle('active', link.dataset.page === page);
+    });
+    
+    if (window.innerWidth <= 992) {
+        document.getElementById('sidebar').classList.remove('show');
+    }
+    
+    loadPageData(page);
 }
 
-/* ==================== FERMETURE DROPMENUS AU CLIC EXTÉRIEUR ==================== */
-document.addEventListener('click',function(e){
-  const ud=document.getElementById('u-drop');if(ud&&!ud.classList.contains('hidden')){
-    if(!e.target.closest('.umen'))ud.classList.add('hidden');
-  }
-  const np=document.getElementById('np');if(np&&!np.classList.contains('hidden')){
-    if(!e.target.closest('.np')&&!e.target.closest('.tib')){np.classList.add('hidden');NPO=false}
-  }
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('show');
+}
+
+function logout() {
+    if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+        document.getElementById('app').style.display = 'none';
+        document.getElementById('loginPage').style.display = 'flex';
+        currentUser = null;
+        userRole = 'admin';
+        userSchoolId = null;
+        showToast('Déconnecté avec succès', 'info');
+    }
+}
+// ============================================================
+// 5. CHARGEMENT DES DONNÉES PAR PAGE
+// ============================================================
+
+function loadPageData(page) {
+    const filterBySchool = (data, field = 'school_id') => {
+        if (userRole === 'admin') return data;
+        if (userRole === 'school') return data.filter(item => item[field] === userSchoolId);
+        if (userRole === 'parent') {
+            const childIds = currentUser?.children_ids || [];
+            if (field === 'student_id') return data.filter(item => childIds.includes(item.student_id));
+            if (field === 'parent_id') return data.filter(item => childIds.includes(item.id));
+            return data;
+        }
+        return data;
+    };
+
+    switch(page) {
+        case 'dashboard': loadDashboard(); break;
+        case 'students': loadStudents(filterBySchool); break;
+        case 'myChildren': loadMyChildren(); break;
+        case 'payments': loadPayments(filterBySchool); break;
+        case 'messages': loadMessages(); break;
+        case 'schools': loadSchools(); break;
+        case 'parents': loadParents(); break;
+        case 'teachers': loadTeachers(filterBySchool); break;
+        case 'classes': loadClasses(filterBySchool); break;
+        default: break;
+    }
+}
+
+// ============================================================
+// 6. TABLEAU DE BORD
+// ============================================================
+
+function loadDashboard() {
+    let students = DB.students;
+    let payments = DB.payments;
+    let schools = DB.schools;
+
+    if (userRole === 'school') {
+        students = students.filter(s => s.school_id === userSchoolId);
+        payments = payments.filter(p => p.school_id === userSchoolId);
+        schools = schools.filter(s => s.id === userSchoolId);
+    } else if (userRole === 'parent') {
+        const childIds = currentUser?.children_ids || [];
+        students = students.filter(s => childIds.includes(s.id));
+        payments = payments.filter(p => childIds.includes(p.student_id));
+        loadParentDashboard();
+        return;
+    }
+
+    document.getElementById('statSchools').textContent = schools.length;
+    document.getElementById('statStudents').textContent = students.length;
+    document.getElementById('statParents').textContent = DB.parentAccounts.length;
+    document.getElementById('studentCount').textContent = students.length;
+
+    const pending = payments.filter(p => p.status === 'pending').length;
+    const completed = payments.filter(p => p.status === 'completed').length;
+    document.getElementById('statPending').textContent = pending;
+    document.getElementById('statCompleted').textContent = completed;
+    document.getElementById('pendingCount').textContent = pending;
+
+    const totalRevenue = payments
+        .filter(p => p.status === 'completed')
+        .reduce((sum, p) => sum + p.amount, 0);
+    document.getElementById('statRevenue').textContent = totalRevenue.toLocaleString();
+
+    // Activités récentes
+    const activities = document.getElementById('recentActivities');
+    const recentPayments = payments.slice(-5).reverse();
+    if (recentPayments.length === 0) {
+        activities.innerHTML = '<div class="text-center text-secondary py-4"><i class="bi bi-inbox" style="font-size:2rem;display:block;margin-bottom:10px;"></i>Aucune activite recente</div>';
+    } else {
+        activities.innerHTML = recentPayments.map(p => `
+            <div class="transaction-item d-flex align-items-center gap-3 py-2 border-bottom">
+                <div class="tx-icon ${p.status === 'completed' ? 'success' : 'pending'}" style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;${p.status === 'completed' ? 'background:#d1fae5;color:#065f46;' : 'background:#fef3c7;color:#92400e;'}">
+                    <i class="bi ${p.status === 'completed' ? 'bi-check-lg' : 'bi-clock'}"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-semibold">${p.student}</div>
+                    <div class="small text-secondary">${p.invoice} • ${p.date}</div>
+                </div>
+                <div class="fw-bold text-success">${p.amount.toLocaleString()} FCFA</div>
+                <span class="badge badge-custom ${p.status === 'completed' ? 'bg-success-light' : 'bg-warning-light'}">${p.status === 'completed' ? 'Paye' : 'En attente'}</span>
+            </div>
+        `).join('');
+    }
+
+    // Notifications
+    const notifList = document.getElementById('notificationsList');
+    if (DB.notifications.length === 0) {
+        notifList.innerHTML = '<div class="text-center text-secondary py-3"><i class="bi bi-check-circle" style="font-size:1.5rem;display:block;margin-bottom:8px;color:var(--success);"></i><small>Aucune notification</small></div>';
+    } else {
+        notifList.innerHTML = DB.notifications.slice(0, 5).map(n => `
+            <div class="notification-item d-flex gap-3 py-2 border-bottom">
+                <span class="notif-dot" style="width:8px;height:8px;border-radius:50%;background:${n.read ? '#cbd5e1' : 'var(--primary)'};margin-top:6px;flex-shrink:0;"></span>
+                <div>
+                    <div class="notif-text">${n.text}</div>
+                    <div class="notif-time small text-secondary">${n.time}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    DB.notifications.forEach(n => n.read = true);
+}
+
+
+
+
+
+// ============================================================
+// 6.1 TABLEAU DE BORD SPÉCIFIQUE POUR LES PARENTS
+// ============================================================
+
+function loadParentDashboard() {
+    const childIds = currentUser?.children_ids || [];
+    const children = DB.students.filter(s => childIds.includes(s.id));
+    let allPayments = DB.payments.filter(p => childIds.includes(p.student_id));
+    
+    const pending = allPayments.filter(p => p.status === 'pending').length;
+    const completed = allPayments.filter(p => p.status === 'completed').length;
+    const totalRevenue = allPayments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
+    
+    document.getElementById('statSchools').textContent = children.length > 0 ? 1 : 0;
+    document.getElementById('statStudents').textContent = children.length;
+    document.getElementById('statParents').textContent = 1;
+    document.getElementById('studentCount').textContent = children.length;
+    document.getElementById('statPending').textContent = pending;
+    document.getElementById('statCompleted').textContent = completed;
+    document.getElementById('statRevenue').textContent = totalRevenue.toLocaleString();
+    document.getElementById('pendingCount').textContent = pending;
+
+    const activities = document.getElementById('recentActivities');
+    if (children.length === 0) {
+        activities.innerHTML = `
+            <div class="text-center text-secondary py-4">
+                <i class="bi bi-heart" style="font-size:2.5rem;display:block;margin-bottom:10px;color:var(--parent-color);"></i>
+                <h6>Aucun enfant associe</h6>
+                <small>Contactez l'administration de l'ecole</small>
+            </div>
+        `;
+        return;
+    }
+
+    activities.innerHTML = children.map(child => {
+        const childPayments = DB.payments.filter(p => p.student_id === child.id);
+        const totalPaid = childPayments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
+        const pendingCount = childPayments.filter(p => p.status === 'pending').length;
+        const colors = ['#EC4899', '#db2777', '#be185d', '#9d174d'];
+        const colorIndex = child.id % colors.length;
+        
+        return `
+            <div class="d-flex align-items-center gap-3 py-3 border-bottom">
+                <div style="width:45px;height:45px;border-radius:50%;background:linear-gradient(135deg,${colors[colorIndex]},${colors[(colorIndex+1) % colors.length]});display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:1rem;flex-shrink:0;">
+                    ${child.first_name.charAt(0)}${child.last_name.charAt(0)}
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-semibold">${child.first_name} ${child.last_name}</div>
+                    <div class="small text-secondary">
+                        <span class="badge badge-custom bg-info-light">${child.class}</span>
+                        <span class="badge badge-custom bg-primary-light">${child.school}</span>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <div class="small">Total paye</div>
+                    <div class="fw-bold text-success">${totalPaid.toLocaleString()} FCFA</div>
+                    ${pendingCount > 0 ? `<span class="badge badge-custom bg-warning-light"><i class="bi bi-clock"></i> ${pendingCount} en attente</span>` : ''}
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewChildDetails(${child.id})">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    const notifList = document.getElementById('notificationsList');
+    const parentName = currentUser?.name?.split(' ')[0] || '';
+    const childNames = children.map(c => `${c.first_name} ${c.last_name}`);
+    const parentNotifs = DB.notifications.filter(n => {
+        const text = n.text;
+        return text.includes(parentName) || childNames.some(name => text.includes(name));
+    });
+    
+    if (parentNotifs.length === 0) {
+        notifList.innerHTML = '<div class="text-center text-secondary py-3"><i class="bi bi-check-circle" style="font-size:1.5rem;display:block;margin-bottom:8px;color:var(--success);"></i><small>Aucune notification</small></div>';
+    } else {
+        notifList.innerHTML = parentNotifs.slice(0, 5).map(n => `
+            <div class="notification-item d-flex gap-3 py-2 border-bottom">
+                <span class="notif-dot" style="width:8px;height:8px;border-radius:50%;background:${n.read ? '#cbd5e1' : 'var(--parent-color)'};margin-top:6px;flex-shrink:0;"></span>
+                <div>
+                    <div class="notif-text">${n.text}</div>
+                    <div class="notif-time small text-secondary">${n.time}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+    parentNotifs.forEach(n => n.read = true);
+}
+
+// ============================================================
+// 6.2 FONCTION D'INITIALISATION DU TABLEAU DE BORD
+// ============================================================
+
+function initDashboard() {
+    // Cette fonction peut être appelée pour forcer le rechargement du tableau de bord
+    loadDashboard();
+}
+
+// ============================================================
+
+// ============================================================
+// 7. GESTION DES ÉTUDIANTS - AVEC SYNC
+// ============================================================
+
+function showStudentForm() {
+    const schools = userRole === 'admin' ? DB.schools : DB.schools.filter(s => s.id === userSchoolId);
+    
+    showModal('Ajouter un etudiant', `
+        <form id="studentForm">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Nom</label>
+                    <input type="text" class="form-control" id="studentLastName" placeholder="Nom" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Prenom</label>
+                    <input type="text" class="form-control" id="studentFirstName" placeholder="Prenom" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Classe</label>
+                    <input type="text" class="form-control" id="studentClass" placeholder="Ex: Terminale A" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Ecole</label>
+                    <select class="form-select" id="studentSchool">
+                        ${schools.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="fw-bold"><i class="bi bi-person-heart" style="color:var(--parent-color);"></i> Parent ou tuteur</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Option</label>
+                                    <select class="form-select" id="parentOption" onchange="toggleParentFields()">
+                                        <option value="existing">Selectionner un parent existant</option>
+                                        <option value="new">Creer un nouveau parent</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-12" id="existingParentDiv">
+                                    <label class="form-label fw-semibold">Parent existant</label>
+                                    <select class="form-select" id="studentParent">
+                                        <option value="">Aucun</option>
+                                        ${DB.parentAccounts.map(p => `<option value="${p.id}">${p.name} (${p.code})</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="col-md-12" id="newParentDiv" style="display:none;">
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Nom complet</label>
+                                            <input type="text" class="form-control" id="newParentName" placeholder="Nom et prenom">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Email</label>
+                                            <input type="email" class="form-control" id="newParentEmail" placeholder="email@exemple.com">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Telephone</label>
+                                            <input type="text" class="form-control" id="newParentPhone" placeholder="77 123 45 67">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Code parent</label>
+                                            <input type="text" class="form-control" id="newParentCode" value="PAR-${String(DB.parentAccounts.length + 1).padStart(3, '0')}" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    `, () => {
+        const lastName = document.getElementById('studentLastName').value;
+        const firstName = document.getElementById('studentFirstName').value;
+        const className = document.getElementById('studentClass').value;
+        const schoolId = parseInt(document.getElementById('studentSchool').value);
+        const parentOption = document.getElementById('parentOption').value;
+        
+        if (!lastName || !firstName || !className) {
+            showToast('Veuillez remplir tous les champs obligatoires', 'error');
+            return;
+        }
+
+        const school = DB.schools.find(s => s.id === schoolId);
+        let parentId = null;
+        let parentName = '';
+        let isNewParent = false;
+        
+        if (parentOption === 'existing') {
+            parentId = parseInt(document.getElementById('studentParent').value) || null;
+            if (parentId) {
+                const parent = DB.parentAccounts.find(p => p.id === parentId);
+                parentName = parent ? parent.name : '';
+            }
+        } else {
+            const newName = document.getElementById('newParentName').value;
+            const newEmail = document.getElementById('newParentEmail').value;
+            const newPhone = document.getElementById('newParentPhone').value;
+            
+            if (!newName) {
+                showToast('Veuillez entrer le nom du parent', 'error');
+                return;
+            }
+            
+            const newParent = {
+                id: DB.parentAccounts.length + 1,
+                code: document.getElementById('newParentCode').value || `PAR-${String(DB.parentAccounts.length + 1).padStart(3, '0')}`,
+                password: 'parent123',
+                name: newName,
+                email: newEmail || 'Non renseigne',
+                phone: newPhone || 'Non renseigne',
+                children_ids: []
+            };
+            
+            DB.parentAccounts.push(newParent);
+            parentId = newParent.id;
+            parentName = newParent.name;
+            isNewParent = true;
+        }
+        
+        const newStudent = {
+            id: DB.students.length + 1,
+            matricule: `STU-${String(DB.students.length + 1).padStart(3, '0')}`,
+            first_name: firstName,
+            last_name: lastName,
+            class: className,
+            school: school ? school.name : 'Non assigne',
+            school_id: schoolId,
+            status: 'Actif',
+            parent_id: parentId
+        };
+        
+        DB.students.push(newStudent);
+        
+        if (parentId) {
+            const parent = DB.parentAccounts.find(p => p.id === parentId);
+            if (parent && !parent.children_ids.includes(newStudent.id)) {
+                parent.children_ids.push(newStudent.id);
+            }
+        }
+        
+        closeModal();
+        
+        const schoolName = school ? school.name : 'l\'ecole';
+        
+        if (parentId) {
+            NotificationSystem.send(parentId, 
+                `<strong>${firstName} ${lastName}</strong> a ete enregistre dans ${schoolName} en classe ${className}`,
+                'pink'
+            );
+        }
+        
+        NotificationSystem.send(`school_${schoolId}`, 
+            `<strong>${firstName} ${lastName}</strong> a ete enregistre avec succès`,
+            'success'
+        );
+        
+        NotificationSystem.send('admin', 
+            `<strong>${firstName} ${lastName}</strong> a ete enregistre dans ${schoolName}${isNewParent ? ' avec nouveau parent ' + parentName : ''}`,
+            'info'
+        );
+        
+        const teachers = DB.teachers.filter(t => t.school_id === schoolId);
+        teachers.forEach(t => {
+            NotificationSystem.send(t.id, 
+                `<strong>${firstName} ${lastName}</strong> a rejoint la classe ${className}`,
+                'info'
+            );
+        });
+        
+        SyncSystem.sync();
+        
+        showToast(`Etudiant ${firstName} ${lastName} ajoute avec succès !`, 'success');
+        if (isNewParent) {
+            showToast(`👤 Nouveau parent ${parentName} cree avec le code ${document.getElementById('newParentCode').value}`, 'success');
+        }
+        
+        loadPageData('students');
+        loadPageData('dashboard');
+        if (userRole === 'parent') loadPageData('myChildren');
+    });
+}
+
+// ===== TOGGLE DES CHAMPS PARENT =====
+function toggleParentFields() {
+    const option = document.getElementById('parentOption').value;
+    document.getElementById('existingParentDiv').style.display = option === 'existing' ? 'block' : 'none';
+    document.getElementById('newParentDiv').style.display = option === 'new' ? 'block' : 'none';
+}
+
+function showStudentForm() {
+    const schools = userRole === 'admin' ? DB.schools : DB.schools.filter(s => s.id === userSchoolId);
+    showModal('➕ Ajouter un étudiant', `
+        <form id="studentForm">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Nom</label>
+                    <input type="text" class="form-control" id="studentLastName" placeholder="Nom" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Prénom</label>
+                    <input type="text" class="form-control" id="studentFirstName" placeholder="Prénom" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Classe</label>
+                    <input type="text" class="form-control" id="studentClass" placeholder="Ex: Terminale A" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">École</label>
+                    <select class="form-select" id="studentSchool">
+                        ${schools.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Parent</label>
+                    <select class="form-select" id="studentParent">
+                        <option value="">Aucun</option>
+                        ${DB.parentAccounts.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
+                    </select>
+                </div>
+            </div>
+        </form>
+    `, () => {
+        const lastName = document.getElementById('studentLastName').value;
+        const firstName = document.getElementById('studentFirstName').value;
+        const className = document.getElementById('studentClass').value;
+        const schoolId = parseInt(document.getElementById('studentSchool').value);
+        const parentId = parseInt(document.getElementById('studentParent').value) || null;
+        
+        if (!lastName || !firstName || !className) {
+            showToast('Veuillez remplir tous les champs', 'error');
+            return;
+        }
+
+        const school = DB.schools.find(s => s.id === schoolId);
+        const newStudent = {
+            id: DB.students.length + 1,
+            matricule: `STU-${String(DB.students.length + 1).padStart(3, '0')}`,
+            first_name: firstName,
+            last_name: lastName,
+            class: className,
+            school: school ? school.name : 'Non assigné',
+            school_id: schoolId,
+            status: 'Actif',
+            parent_id: parentId
+        };
+        
+        DB.students.push(newStudent);
+        if (parentId) {
+            const parent = DB.parentAccounts.find(p => p.id === parentId);
+            if (parent && !parent.children_ids.includes(newStudent.id)) {
+                parent.children_ids.push(newStudent.id);
+            }
+        }
+        
+        closeModal();
+        showToast(`Étudiant ${firstName} ${lastName} ajouté avec succès !`, 'success');
+        loadPageData('students');
+        loadPageData('dashboard');
+    });
+}
+
+function viewStudent(id) {
+    const student = DB.students.find(s => s.id === id);
+    if (!student) return;
+    const parent = DB.parentAccounts.find(p => p.children_ids.includes(id));
+    const payments = DB.payments.filter(p => p.student_id === id);
+    const totalPaid = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
+
+    showModal(`📘 ${student.first_name} ${student.last_name}`, `
+        <div class="row g-3">
+            <div class="col-md-6"><strong>Matricule :</strong> ${student.matricule}</div>
+            <div class="col-md-6"><strong>Classe :</strong> ${student.class}</div>
+            <div class="col-md-6"><strong>École :</strong> ${student.school}</div>
+            <div class="col-md-6"><strong>Parent :</strong> ${parent ? parent.name : 'Non assigné'}</div>
+            <div class="col-md-6"><strong>Statut :</strong> <span class="badge bg-success">${student.status}</span></div>
+            <div class="col-md-6"><strong>Total payé :</strong> ${totalPaid.toLocaleString()} FCFA</div>
+        </div>
+        <hr>
+        <h6>Historique des paiements</h6>
+        ${payments.length === 0 ? '<p class="text-secondary">Aucun paiement</p>' : 
+            payments.map(p => `
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <div>
+                        <div class="fw-semibold">${p.invoice} - ${p.type}</div>
+                        <div class="small text-secondary">${p.date} • ${p.method}</div>
+                    </div>
+                    <div class="fw-bold text-success">${p.amount.toLocaleString()} FCFA</div>
+                </div>
+            `).join('')
+        }
+    `, null);
+}
+
+function editStudent(id) {
+    const student = DB.students.find(s => s.id === id);
+    if (!student) return;
+    const schools = userRole === 'admin' ? DB.schools : DB.schools.filter(s => s.id === userSchoolId);
+    
+    showModal(`✏️ Modifier ${student.first_name} ${student.last_name}`, `
+        <form id="editStudentForm">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Nom</label>
+                    <input type="text" class="form-control" id="editStudentLastName" value="${student.last_name}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Prénom</label>
+                    <input type="text" class="form-control" id="editStudentFirstName" value="${student.first_name}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Classe</label>
+                    <input type="text" class="form-control" id="editStudentClass" value="${student.class}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">École</label>
+                    <select class="form-select" id="editStudentSchool">
+                        ${schools.map(s => `<option value="${s.id}" ${s.id === student.school_id ? 'selected' : ''}>${s.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Parent</label>
+                    <select class="form-select" id="editStudentParent">
+                        <option value="">Aucun</option>
+                        ${DB.parentAccounts.map(p => `<option value="${p.id}" ${p.id === student.parent_id ? 'selected' : ''}>${p.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Statut</label>
+                    <select class="form-select" id="editStudentStatus">
+                        <option value="Actif" ${student.status === 'Actif' ? 'selected' : ''}>Actif</option>
+                        <option value="Inactif" ${student.status === 'Inactif' ? 'selected' : ''}>Inactif</option>
+                        <option value="Diplômé" ${student.status === 'Diplômé' ? 'selected' : ''}>Diplômé</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+    `, () => {
+        const lastName = document.getElementById('editStudentLastName').value;
+        const firstName = document.getElementById('editStudentFirstName').value;
+        const className = document.getElementById('editStudentClass').value;
+        const schoolId = parseInt(document.getElementById('editStudentSchool').value);
+        const parentId = parseInt(document.getElementById('editStudentParent').value) || null;
+        const status = document.getElementById('editStudentStatus').value;
+        
+        if (!lastName || !firstName || !className) {
+            showToast('Veuillez remplir tous les champs', 'error');
+            return;
+        }
+
+        const school = DB.schools.find(s => s.id === schoolId);
+        
+        // Retirer l'étudiant de l'ancien parent
+        if (student.parent_id) {
+            const oldParent = DB.parentAccounts.find(p => p.id === student.parent_id);
+            if (oldParent) {
+                oldParent.children_ids = oldParent.children_ids.filter(cid => cid !== student.id);
+            }
+        }
+        
+        // Ajouter au nouveau parent
+        if (parentId) {
+            const newParent = DB.parentAccounts.find(p => p.id === parentId);
+            if (newParent && !newParent.children_ids.includes(student.id)) {
+                newParent.children_ids.push(student.id);
+            }
+        }
+        
+        student.last_name = lastName;
+        student.first_name = firstName;
+        student.class = className;
+        student.school = school ? school.name : 'Non assigné';
+        student.school_id = schoolId;
+        student.parent_id = parentId;
+        student.status = status;
+        
+        closeModal();
+        showToast(`Étudiant ${firstName} ${lastName} modifié avec succès !`, 'success');
+        loadPageData('students');
+        loadPageData('dashboard');
+    });
+}
+
+function deleteStudent(id) {
+    if (!confirm('Voulez-vous vraiment supprimer cet etudiant ?')) return;
+    const student = DB.students.find(s => s.id === id);
+    if (!student) return;
+    
+    if (student.parent_id) {
+        const parent = DB.parentAccounts.find(p => p.id === student.parent_id);
+        if (parent) {
+            parent.children_ids = parent.children_ids.filter(cid => cid !== student.id);
+        }
+    }
+    
+    const studentName = `${student.first_name} ${student.last_name}`;
+    DB.students = DB.students.filter(s => s.id !== id);
+    
+    NotificationSystem.send(`school_${student.school_id}`, 
+        `<strong>${studentName}</strong> a ete supprime de l'ecole`,
+        'warning'
+    );
+    
+    if (student.parent_id) {
+        NotificationSystem.send(student.parent_id, 
+            `<strong>${studentName}</strong> a ete supprime de l'ecole`,
+            'warning'
+        );
+    }
+    
+    NotificationSystem.send('admin', 
+        `<strong>${studentName}</strong> a ete supprime du systeme`,
+        'info'
+    );
+    
+    SyncSystem.sync();
+    
+    showToast(`Etudiant supprime avec succès !`, 'success');
+    loadPageData('students');
+    loadPageData('dashboard');
+    if (userRole === 'parent') loadPageData('myChildren');
+}
+
+// ============================================================
+// 8. MES ENFANTS (PARENT) - VERSION SIMPLIFIÉE
+// ============================================================
+
+function loadMyChildren() {
+    const childIds = currentUser?.children_ids || [];
+    const children = DB.students.filter(s => childIds.includes(s.id));
+    
+    const container = document.getElementById('childrenList');
+    if (children.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-secondary py-5">
+                <i class="bi bi-heart" style="font-size:3rem;display:block;margin-bottom:15px;color:var(--parent-color);"></i>
+                <h5>Aucun enfant enregistré</h5>
+                <p class="small">Contactez l'administration de l'école pour associer vos enfants à votre compte.</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = children.map(child => {
+        const childPayments = DB.payments.filter(p => p.student_id === child.id);
+        const totalPaid = childPayments
+            .filter(p => p.status === 'completed')
+            .reduce((sum, p) => sum + p.amount, 0);
+        const pendingPayments = childPayments.filter(p => p.status === 'pending').length;
+        const recentPayment = childPayments.length > 0 ? childPayments[childPayments.length - 1] : null;
+
+        return `
+            <div class="child-card p-4 border rounded-3 mb-4" style="background:white;border-left:4px solid var(--parent-color);box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                <div class="row align-items-center">
+                    <!-- Photo/Avatar de l'enfant -->
+                    <div class="col-md-2 col-3 text-center">
+                        <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--parent-color),#db2777);display:inline-flex;align-items:center;justify-content:center;color:white;font-size:1.8rem;font-weight:700;box-shadow:0 4px 15px rgba(236,72,153,0.3);">
+                            ${child.first_name.charAt(0)}${child.last_name.charAt(0)}
+                        </div>
+                    </div>
+                    
+                    <!-- Informations de l'enfant -->
+                    <div class="col-md-7 col-9">
+                        <h5 class="fw-bold mb-1" style="color:#1e293b;">${child.first_name} ${child.last_name}</h5>
+                        <div class="d-flex flex-wrap gap-2 mb-1">
+                            <span class="badge badge-custom bg-info-light"><i class="bi bi-mortarboard"></i> ${child.class}</span>
+                            <span class="badge badge-custom bg-primary-light"><i class="bi bi-building"></i> ${child.school}</span>
+                            <span class="badge badge-custom ${child.status === 'Actif' ? 'bg-success-light' : 'bg-warning-light'}">
+                                <i class="bi ${child.status === 'Actif' ? 'bi-check-circle' : 'bi-clock'}"></i> ${child.status}
+                            </span>
+                        </div>
+                        <div class="text-secondary small">
+                            <i class="bi bi-credit-card"></i> Total payé : <strong class="text-success">${totalPaid.toLocaleString()} FCFA</strong>
+                            ${pendingPayments > 0 ? `<span class="badge badge-custom bg-warning-light ms-2"><i class="bi bi-clock"></i> ${pendingPayments} en attente</span>` : ''}
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="col-md-3 col-12 mt-3 mt-md-0 text-end">
+                        <button class="btn btn-outline-primary btn-sm me-1" onclick="viewChildDetails(${child.id})">
+                            <i class="bi bi-eye"></i> Voir
+                        </button>
+                        <button class="btn btn-success btn-sm" onclick="showPaymentFormForStudent(${child.id})">
+                            <i class="bi bi-credit-card"></i> Payer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ============================================================
+// VOIR LES DÉTAILS D'UN ENFANT (PARENT)
+// ============================================================
+
+function viewChildDetails(childId) {
+    const child = DB.students.find(s => s.id === childId);
+    if (!child) return;
+    
+    const payments = DB.payments.filter(p => p.student_id === childId);
+    const totalPaid = payments
+        .filter(p => p.status === 'completed')
+        .reduce((sum, p) => sum + p.amount, 0);
+    const pendingPayments = payments.filter(p => p.status === 'pending');
+    
+    // Trouver l'enseignant de la classe
+    const classInfo = DB.classes.find(c => c.name === child.class && c.school_id === child.school_id);
+    const teacher = classInfo ? DB.teachers.find(t => t.id === classInfo.teacher_id) : null;
+
+    showModal(`📘 ${child.first_name} ${child.last_name}`, `
+        <div class="row g-3">
+            <!-- En-tête avec photo -->
+            <div class="col-md-12 text-center mb-3">
+                <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--parent-color),#db2777);display:inline-flex;align-items:center;justify-content:center;color:white;font-size:2rem;font-weight:700;box-shadow:0 4px 15px rgba(236,72,153,0.3);">
+                    ${child.first_name.charAt(0)}${child.last_name.charAt(0)}
+                </div>
+                <h5 class="mt-2 fw-bold">${child.first_name} ${child.last_name}</h5>
+                <p class="text-secondary small mb-0">${child.class} • ${child.school}</p>
+            </div>
+
+            <!-- Informations générales -->
+            <div class="col-md-12">
+                <div class="p-3 bg-light rounded-3">
+                    <h6 class="fw-bold"><i class="bi bi-info-circle" style="color:var(--info);"></i> Informations générales</h6>
+                    <div class="row mt-2">
+                        <div class="col-md-4"><strong>Matricule :</strong> ${child.matricule}</div>
+                        <div class="col-md-4"><strong>Classe :</strong> ${child.class}</div>
+                        <div class="col-md-4"><strong>Statut :</strong> <span class="badge ${child.status === 'Actif' ? 'bg-success' : 'bg-warning'}">${child.status}</span></div>
+                        <div class="col-md-6 mt-2"><strong>École :</strong> ${child.school}</div>
+                        <div class="col-md-6 mt-2"><strong>Enseignant :</strong> ${teacher ? `${teacher.first_name} ${teacher.last_name}` : 'Non assigné'}</div>
+                        <div class="col-md-6 mt-2"><strong>Total payé :</strong> <span class="text-success fw-bold">${totalPaid.toLocaleString()} FCFA</span></div>
+                        <div class="col-md-6 mt-2"><strong>Paiements en attente :</strong> <span class="text-warning fw-bold">${pendingPayments.length}</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historique des paiements -->
+            <div class="col-md-12">
+                <h6><i class="bi bi-credit-card" style="color:var(--success);"></i> Historique des paiements</h6>
+                ${payments.length === 0 ? 
+                    '<p class="text-secondary small">Aucun paiement enregistré</p>' :
+                    `<div class="table-responsive">
+                        <table class="table table-sm table-edugest">
+                            <thead>
+                                <tr>
+                                    <th>Facture</th>
+                                    <th>Type</th>
+                                    <th>Montant</th>
+                                    <th>Méthode</th>
+                                    <th>Statut</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${payments.sort((a,b) => new Date(b.date) - new Date(a.date)).map(p => `
+                                    <tr>
+                                        <td><small>${p.invoice}</small></td>
+                                        <td><small>${p.type}</small></td>
+                                        <td><strong>${p.amount.toLocaleString()} FCFA</strong></td>
+                                        <td><small>${p.method}</small></td>
+                                        <td>
+                                            <span class="badge badge-custom ${p.status === 'completed' ? 'bg-success-light' : 'bg-warning-light'}">
+                                                ${p.status === 'completed' ? 'Payé' : 'En attente'}
+                                            </span>
+                                        </td>
+                                        <td><small>${p.date}</small></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold">
+                                    <td colspan="2">Total</td>
+                                    <td>${totalPaid.toLocaleString()} FCFA</td>
+                                    <td colspan="3"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>`
+                }
+            </div>
+
+            <!-- Actions -->
+            <div class="col-md-12">
+                <div class="d-flex gap-2 flex-wrap justify-content-center">
+                    <button class="btn btn-success" onclick="closeModal();showPaymentFormForStudent(${child.id});">
+                        <i class="bi bi-credit-card"></i> Effectuer un paiement
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="showToast('Contacter l\'enseignant','info')">
+                        <i class="bi bi-envelope"></i> Contacter l'enseignant
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="showToast('Télécharger le relevé','info')">
+                        <i class="bi bi-download"></i> Télécharger le relevé
+                    </button>
+                </div>
+            </div>
+        </div>
+    `, null);
+}
+
+// ============================================================
+// FORMULAIRE DE PAIEMENT POUR UN ENFANT (PARENT)
+// ============================================================
+
+function showPaymentFormForStudent(studentId) {
+    const student = DB.students.find(s => s.id === studentId);
+    if (!student) return;
+    
+    showModal('💰 Effectuer un paiement', `
+        <div class="text-center mb-3">
+            <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--parent-color),#db2777);display:inline-flex;align-items:center;justify-content:center;color:white;font-size:1.5rem;font-weight:700;">
+                ${student.first_name.charAt(0)}${student.last_name.charAt(0)}
+            </div>
+            <h6 class="mt-2">${student.first_name} ${student.last_name}</h6>
+            <p class="text-secondary small">${student.class} • ${student.school}</p>
+        </div>
+        <form id="paymentForm">
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Montant (FCFA)</label>
+                    <input type="number" class="form-control" id="paymentAmount" placeholder="Ex: 50000" required min="100">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Type de paiement</label>
+                    <select class="form-select" id="paymentType">
+                        <option value="Scolarite">Scolarite</option>
+                        <option value="Inscription">Inscription</option>
+                        <option value="Cantine">Cantine</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Methode</label>
+                    <select class="form-select" id="paymentMethod">
+                        <option value="M-Pesa">M-Pesa</option>
+                        <option value="Orange Money">Orange Money</option>
+                        <option value="Especes">Especes</option>
+                        <option value="Banque">Banque</option>
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Date</label>
+                    <input type="date" class="form-control" id="paymentDate" value="${new Date().toISOString().split('T')[0]}">
+                </div>
+                <div class="col-md-12">
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle"></i> Apres validation par l'ecole, vous recevrez une confirmation de paiement.
+                    </div>
+                </div>
+            </div>
+        </form>
+    `, () => {
+        const amount = parseFloat(document.getElementById('paymentAmount').value);
+        const type = document.getElementById('paymentType').value;
+        const method = document.getElementById('paymentMethod').value;
+        const date = document.getElementById('paymentDate').value;
+        
+        if (!amount || amount <= 0) {
+            showToast('Veuillez entrer un montant valide', 'error');
+            return;
+        }
+
+        const newPayment = {
+            id: DB.payments.length + 1,
+            invoice: `INV-${String(DB.payments.length + 1).padStart(3, '0')}`,
+            student: `${student.first_name} ${student.last_name}`,
+            student_id: student.id,
+            amount: amount,
+            method: method,
+            type: type,
+            status: 'pending',
+            date: date || new Date().toISOString().split('T')[0],
+            school: student.school,
+            school_id: student.school_id
+        };
+        
+        DB.payments.push(newPayment);
+        
+        const parent = DB.parentAccounts.find(p => p.children_ids.includes(student.id));
+        
+        if (parent) {
+            NotificationSystem.send(parent.id, 
+                `<strong>${student.first_name} ${student.last_name}</strong> - Paiement de ${amount.toLocaleString()} FCFA en attente de validation`,
+                'pink'
+            );
+        }
+        
+        NotificationSystem.send(`school_${student.school_id}`, 
+            `<strong>${student.first_name} ${student.last_name}</strong> - Paiement de ${amount.toLocaleString()} FCFA en attente de validation`,
+            'warning'
+        );
+        
+        NotificationSystem.send('admin', 
+            `<strong>${student.first_name} ${student.last_name}</strong> - Paiement de ${amount.toLocaleString()} FCFA en attente`,
+            'info'
+        );
+        
+        const classInfo = DB.classes.find(c => c.name === student.class && c.school_id === student.school_id);
+        if (classInfo && classInfo.teacher_id) {
+            NotificationSystem.send(classInfo.teacher_id, 
+                `<strong>${student.first_name} ${student.last_name}</strong> a effectue un paiement de ${amount.toLocaleString()} FCFA`,
+                'info'
+            );
+        }
+        
+        SyncSystem.sync();
+        
+        closeModal();
+        showToast(`✅ Paiement de ${amount.toLocaleString()} FCFA enregistre avec succes !`, 'success');
+        showToast(`📱 Un SMS de confirmation vous sera envoye apres validation par l'ecole.`, 'info');
+        
+        loadPageData('myChildren');
+        loadPageData('payments');
+        loadPageData('dashboard');
+    });
+}
+// ============================================================
+// ACCÈS RAPIDE DEPUIS LE TABLEAU DE BORD PARENT
+// ============================================================
+
+function loadParentDashboard() {
+    const childIds = currentUser?.children_ids || [];
+    const children = DB.students.filter(s => childIds.includes(s.id));
+    
+    // Mettre à jour les stats
+    document.getElementById('statStudents').textContent = children.length;
+    
+    // Afficher un résumé rapide
+    const activities = document.getElementById('recentActivities');
+    if (children.length === 0) {
+        activities.innerHTML = `
+            <div class="text-center text-secondary py-4">
+                <i class="bi bi-heart" style="font-size:2rem;display:block;margin-bottom:10px;color:var(--parent-color);"></i>
+                <p>Aucun enfant associé à votre compte.</p>
+                <small>Contactez l'administration de l'école.</small>
+            </div>
+        `;
+        return;
+    }
+    
+    // Afficher les enfants sur le tableau de bord
+    activities.innerHTML = children.map(child => {
+        const childPayments = DB.payments.filter(p => p.student_id === child.id);
+        const totalPaid = childPayments
+            .filter(p => p.status === 'completed')
+            .reduce((sum, p) => sum + p.amount, 0);
+        const pending = childPayments.filter(p => p.status === 'pending').length;
+        
+        return `
+            <div class="d-flex align-items-center gap-3 py-3 border-bottom">
+                <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--parent-color),#db2777);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.9rem;">
+                    ${child.first_name.charAt(0)}${child.last_name.charAt(0)}
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-semibold">${child.first_name} ${child.last_name}</div>
+                    <div class="small text-secondary">${child.class} • ${child.school}</div>
+                </div>
+                <div class="text-end">
+                    <div class="small">Total payé</div>
+                    <div class="fw-bold text-success">${totalPaid.toLocaleString()} FCFA</div>
+                    ${pending > 0 ? `<span class="badge badge-custom bg-warning-light">${pending} en attente</span>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Notifications personnalisées pour le parent
+    const notifList = document.getElementById('notificationsList');
+    const parentNotifs = DB.notifications.filter(n => 
+        n.text.includes(currentUser?.name?.split(' ')[0] || '')
+    );
+    
+    if (parentNotifs.length === 0) {
+        notifList.innerHTML = `
+            <div class="text-center text-secondary py-3">
+                <i class="bi bi-check-circle" style="font-size:1.5rem;display:block;margin-bottom:8px;color:var(--success);"></i>
+                <small>Aucune notification</small>
+            </div>
+        `;
+    } else {
+        notifList.innerHTML = parentNotifs.slice(0, 5).map(n => `
+            <div class="d-flex gap-3 py-2 border-bottom">
+                <span style="width:8px;height:8px;border-radius:50%;background:${n.read ? '#cbd5e1' : 'var(--parent-color)'};margin-top:6px;flex-shrink:0;"></span>
+                <div>
+                    <div class="notif-text">${n.text}</div>
+                    <div class="notif-time small text-secondary">${n.time}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+function showPaymentFormForStudent(studentId) {
+    const student = DB.students.find(s => s.id === studentId);
+    if (!student) return;
+    
+    showModal('💰 Paiement', `
+        <form id="paymentForm">
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Étudiant</label>
+                    <input type="text" class="form-control" value="${student.first_name} ${student.last_name}" disabled>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Montant (FCFA)</label>
+                    <input type="number" class="form-control" id="paymentAmount" placeholder="Ex: 50000" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Type</label>
+                    <select class="form-select" id="paymentType">
+                        <option value="Scolarité">Scolarité</option>
+                        <option value="Inscription">Inscription</option>
+                        <option value="Cantine">Cantine</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Méthode</label>
+                    <select class="form-select" id="paymentMethod">
+                        <option value="M-Pesa">M-Pesa</option>
+                        <option value="Orange Money">Orange Money</option>
+                        <option value="Espèces">Espèces</option>
+                        <option value="Banque">Banque</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Date</label>
+                    <input type="date" class="form-control" id="paymentDate" value="${new Date().toISOString().split('T')[0]}">
+                </div>
+            </div>
+        </form>
+    `, () => {
+        const amount = parseFloat(document.getElementById('paymentAmount').value);
+        const type = document.getElementById('paymentType').value;
+        const method = document.getElementById('paymentMethod').value;
+        const date = document.getElementById('paymentDate').value;
+        
+        if (!amount || amount <= 0) {
+            showToast('Veuillez entrer un montant valide', 'error');
+            return;
+        }
+
+        const newPayment = {
+            id: DB.payments.length + 1,
+            invoice: `INV-${String(DB.payments.length + 1).padStart(3, '0')}`,
+            student: `${student.first_name} ${student.last_name}`,
+            student_id: student.id,
+            amount: amount,
+            method: method,
+            type: type,
+            status: 'pending',
+            date: date || new Date().toISOString().split('T')[0],
+            school: student.school,
+            school_id: student.school_id
+        };
+        
+        DB.payments.push(newPayment);
+        
+        // Ajouter une notification
+        DB.notifications.push({
+            id: DB.notifications.length + 1,
+            text: `<strong>${student.first_name} ${student.last_name}</strong> - Paiement de ${amount.toLocaleString()} FCFA en attente`,
+            time: 'À l\'instant',
+            read: false
+        });
+        
+        closeModal();
+        showToast(`Paiement de ${amount.toLocaleString()} FCFA enregistré avec succès !`, 'success');
+        loadPageData('dashboard');
+        loadPageData('payments');
+        if (userRole === 'parent') loadMyChildren();
+    });
+}
+
+// ============================================================
+// 9. PAIEMENTS
+// ============================================================
+
+function loadPayments(filterFn) {
+    const payments = filterFn ? filterFn(DB.payments, 'student_id') : DB.payments;
+    const tbody = document.getElementById('paymentsList');
+    
+    if (payments.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-secondary py-4">Aucun paiement</td></tr>`;
+        return;
+    }
+    
+    tbody.innerHTML = payments.map(p => {
+        const statusClass = p.status === 'completed' ? 'bg-success-light' : 'bg-warning-light';
+        return `
+            <tr>
+                <td><strong>${p.invoice}</strong></td>
+                <td>${p.student}</td>
+                <td><strong>${p.amount.toLocaleString()} FCFA</strong></td>
+                <td>${p.method}</td>
+                <td>${p.type}</td>
+                <td><span class="badge badge-custom ${statusClass}">${p.status === 'completed' ? 'Payé' : 'En attente'}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewPayment(${p.id})"><i class="bi bi-eye"></i></button>
+                    ${p.status === 'pending' ? 
+                        `<button class="btn btn-sm btn-success" onclick="validatePayment(${p.id})"><i class="bi bi-check-lg"></i></button>` : ''}
+                    <button class="btn btn-sm btn-outline-danger" onclick="deletePayment(${p.id})"><i class="bi bi-trash"></i></button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function showPaymentForm() {
+    const students = userRole === 'admin' ? DB.students : 
+                     userRole === 'school' ? DB.students.filter(s => s.school_id === userSchoolId) :
+                     DB.students.filter(s => (currentUser?.children_ids || []).includes(s.id));
+    
+    showModal('💰 Nouveau paiement', `
+        <form id="paymentForm">
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Étudiant</label>
+                    <select class="form-select" id="paymentStudent" required>
+                        <option value="">Sélectionner un étudiant</option>
+                        ${students.map(s => `<option value="${s.id}">${s.first_name} ${s.last_name} - ${s.class}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Montant (FCFA)</label>
+                    <input type="number" class="form-control" id="paymentAmount" placeholder="Ex: 50000" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Type</label>
+                    <select class="form-select" id="paymentType">
+                        <option value="Scolarité">Scolarité</option>
+                        <option value="Inscription">Inscription</option>
+                        <option value="Cantine">Cantine</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Méthode</label>
+                    <select class="form-select" id="paymentMethod">
+                        <option value="M-Pesa">M-Pesa</option>
+                        <option value="Orange Money">Orange Money</option>
+                        <option value="Espèces">Espèces</option>
+                        <option value="Banque">Banque</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Date</label>
+                    <input type="date" class="form-control" id="paymentDate" value="${new Date().toISOString().split('T')[0]}">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Statut</label>
+                    <select class="form-select" id="paymentStatus">
+                        <option value="pending">En attente</option>
+                        <option value="completed">Payé</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+    `, () => {
+        const studentId = parseInt(document.getElementById('paymentStudent').value);
+        const amount = parseFloat(document.getElementById('paymentAmount').value);
+        const type = document.getElementById('paymentType').value;
+        const method = document.getElementById('paymentMethod').value;
+        const date = document.getElementById('paymentDate').value;
+        const status = document.getElementById('paymentStatus').value;
+        
+        if (!studentId || !amount || amount <= 0) {
+            showToast('Veuillez sélectionner un étudiant et entrer un montant valide', 'error');
+            return;
+        }
+
+        const student = DB.students.find(s => s.id === studentId);
+        if (!student) return;
+
+        const newPayment = {
+            id: DB.payments.length + 1,
+            invoice: `INV-${String(DB.payments.length + 1).padStart(3, '0')}`,
+            student: `${student.first_name} ${student.last_name}`,
+            student_id: student.id,
+            amount: amount,
+            method: method,
+            type: type,
+            status: status,
+            date: date || new Date().toISOString().split('T')[0],
+            school: student.school,
+            school_id: student.school_id
+        };
+        
+        DB.payments.push(newPayment);
+        
+        // Ajouter une notification
+        DB.notifications.push({
+            id: DB.notifications.length + 1,
+            text: `<strong>${student.first_name} ${student.last_name}</strong> - Paiement de ${amount.toLocaleString()} FCFA ${status === 'completed' ? 'effectué' : 'en attente'}`,
+            time: 'À l\'instant',
+            read: false
+        });
+        
+        closeModal();
+        showToast(`Paiement de ${amount.toLocaleString()} FCFA enregistré avec succès !`, 'success');
+        loadPageData('payments');
+        loadPageData('dashboard');
+    });
+}
+
+function viewPayment(id) {
+    const payment = DB.payments.find(p => p.id === id);
+    if (!payment) return;
+    
+    showModal(`🧾 ${payment.invoice}`, `
+        <div class="row g-3">
+            <div class="col-md-6"><strong>Étudiant :</strong> ${payment.student}</div>
+            <div class="col-md-6"><strong>Montant :</strong> ${payment.amount.toLocaleString()} FCFA</div>
+            <div class="col-md-6"><strong>Type :</strong> ${payment.type}</div>
+            <div class="col-md-6"><strong>Méthode :</strong> ${payment.method}</div>
+            <div class="col-md-6"><strong>Date :</strong> ${payment.date}</div>
+            <div class="col-md-6"><strong>Statut :</strong> <span class="badge badge-custom ${payment.status === 'completed' ? 'bg-success-light' : 'bg-warning-light'}">${payment.status === 'completed' ? 'Payé' : 'En attente'}</span></div>
+            <div class="col-md-12"><strong>École :</strong> ${payment.school}</div>
+        </div>
+    `, null);
+}
+
+function validatePayment(id) {
+    if (!confirm('Confirmer la validation de ce paiement ?')) return;
+    const payment = DB.payments.find(p => p.id === id);
+    if (!payment) return;
+    
+    payment.status = 'completed';
+    
+    const student = DB.students.find(s => s.id === payment.student_id);
+    const parent = student ? DB.parentAccounts.find(p => p.children_ids.includes(student.id)) : null;
+    
+    if (parent) {
+        NotificationSystem.send(parent.id, 
+            `<strong>${payment.student}</strong> - Paiement de ${payment.amount.toLocaleString()} FCFA valide avec succès !`,
+            'success'
+        );
+    }
+    
+    NotificationSystem.send(`school_${payment.school_id}`, 
+        `<strong>${payment.student}</strong> - Paiement de ${payment.amount.toLocaleString()} FCFA valide`,
+        'success'
+    );
+    
+    NotificationSystem.send('admin', 
+        `<strong>${payment.student}</strong> - Paiement de ${payment.amount.toLocaleString()} FCFA valide par l'ecole`,
+        'success'
+    );
+    
+    SyncSystem.sync();
+    
+    showToast('Paiement valide avec succès !', 'success');
+    loadPageData('payments');
+    loadPageData('dashboard');
+    if (userRole === 'parent') loadPageData('myChildren');
+}
+
+function deletePayment(id) {
+    if (!confirm('Voulez-vous vraiment supprimer ce paiement ?')) return;
+    DB.payments = DB.payments.filter(p => p.id !== id);
+    showToast('Paiement supprimé', 'info');
+    loadPageData('payments');
+    loadPageData('dashboard');
+}
+
+// ============================================================
+// 9.5 GÉNÉRATION DE REÇUS POUR PAIEMENTS
+// ============================================================
+
+// ===== GÉNÉRER UN REÇU POUR UN PAIEMENT =====
+function generateReceipt(paymentId) {
+    const payment = DB.payments.find(p => p.id === paymentId);
+    if (!payment) {
+        showToast('Paiement non trouvé', 'error');
+        return;
+    }
+    
+    // Vérifier que le paiement est validé
+    if (payment.status !== 'completed') {
+        showToast('Ce paiement est encore en attente. Veuillez le valider d\'abord.', 'warning');
+        return;
+    }
+    
+    const student = DB.students.find(s => s.id === payment.student_id);
+    const school = DB.schools.find(s => s.id === payment.school_id);
+    const parent = student ? DB.parentAccounts.find(p => p.children_ids.includes(student.id)) : null;
+    
+    // Créer la fenêtre d'impression
+    const receiptWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
+    
+    const receiptHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Reçu de paiement - ${payment.invoice}</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            
+            body {
+                font-family: 'Times New Roman', serif;
+                background: #f0f0f0;
+                padding: 20px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+            }
+            
+            .receipt-container {
+                background: white;
+                width: 210mm;
+                min-height: 297mm;
+                padding: 20mm;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+                position: relative;
+            }
+            
+            /* ===== EN-TÊTE ===== */
+            .header {
+                text-align: center;
+                border-bottom: 3px double #1a1a2e;
+                padding-bottom: 15px;
+                margin-bottom: 20px;
+            }
+            
+            .header .country {
+                font-size: 11px;
+                letter-spacing: 3px;
+                color: #666;
+                text-transform: uppercase;
+                font-weight: bold;
+            }
+            
+            .header .school-name {
+                font-size: 22px;
+                font-weight: bold;
+                color: #1a1a2e;
+                margin: 5px 0;
+                text-transform: uppercase;
+            }
+            
+            .header .school-info {
+                font-size: 11px;
+                color: #555;
+                line-height: 1.6;
+            }
+            
+            .header .receipt-title {
+                font-size: 18px;
+                font-weight: bold;
+                color: #1a1a2e;
+                margin-top: 10px;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                border: 2px solid #1a1a2e;
+                display: inline-block;
+                padding: 5px 30px;
+                border-radius: 4px;
+            }
+            
+            /* ===== NUMÉRO DE REÇU ===== */
+            .receipt-number {
+                text-align: right;
+                font-size: 12px;
+                color: #666;
+                margin-bottom: 15px;
+            }
+            
+            .receipt-number strong {
+                color: #1a1a2e;
+            }
+            
+            /* ===== INFORMATIONS ===== */
+            .info-section {
+                margin: 15px 0;
+                padding: 10px;
+                background: #f8f9fa;
+                border-radius: 4px;
+                border-left: 4px solid #4F46E5;
+            }
+            
+            .info-section .info-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 4px 0;
+                font-size: 13px;
+                border-bottom: 1px dotted #e9ecef;
+            }
+            
+            .info-section .info-row:last-child {
+                border-bottom: none;
+            }
+            
+            .info-section .label {
+                font-weight: 600;
+                color: #495057;
+            }
+            
+            .info-section .value {
+                color: #212529;
+            }
+            
+            /* ===== TABLEAU DES PAIEMENTS ===== */
+            .payment-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+                font-size: 13px;
+            }
+            
+            .payment-table thead th {
+                background: #1a1a2e;
+                color: white;
+                padding: 10px 8px;
+                text-align: left;
+                border: 1px solid #1a1a2e;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            .payment-table tbody td {
+                padding: 10px 8px;
+                border: 1px solid #dee2e6;
+            }
+            
+            .payment-table tbody tr:nth-child(even) {
+                background: #f8f9fa;
+            }
+            
+            .payment-table .text-right {
+                text-align: right;
+            }
+            
+            .payment-table .text-center {
+                text-align: center;
+            }
+            
+            .payment-table .total-row {
+                background: #1a1a2e !important;
+                color: white;
+                font-weight: bold;
+            }
+            
+            .payment-table .total-row td {
+                border-color: #1a1a2e;
+            }
+            
+            /* ===== RÉSUMÉ FINANCIER ===== */
+            .summary {
+                margin: 20px 0;
+                padding: 15px;
+                background: #f8f9fa;
+                border-radius: 4px;
+                border: 2px solid #dee2e6;
+            }
+            
+            .summary .summary-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 5px 0;
+                font-size: 14px;
+            }
+            
+            .summary .summary-row.total {
+                font-size: 16px;
+                font-weight: bold;
+                border-top: 2px solid #1a1a2e;
+                padding-top: 10px;
+                margin-top: 5px;
+                color: #1a1a2e;
+            }
+            
+            /* ===== MENTIONS LÉGALES ===== */
+            .footer {
+                margin-top: 30px;
+                padding-top: 15px;
+                border-top: 2px solid #dee2e6;
+                text-align: center;
+                font-size: 10px;
+                color: #888;
+                line-height: 1.8;
+            }
+            
+            .footer .signature {
+                margin-top: 20px;
+                display: flex;
+                justify-content: space-around;
+                font-size: 12px;
+                color: #555;
+            }
+            
+            .footer .signature .line {
+                width: 150px;
+                border-top: 1px solid #333;
+                margin-top: 30px;
+                padding-top: 5px;
+            }
+            
+            /* ===== BOUTON IMPRIMER ===== */
+            .print-btn {
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                background: #4F46E5;
+                color: white;
+                border: none;
+                padding: 14px 28px;
+                border-radius: 50px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                box-shadow: 0 4px 15px rgba(79,70,229,0.4);
+                transition: all 0.3s;
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .print-btn:hover {
+                background: #4338CA;
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(79,70,229,0.5);
+            }
+            
+            .print-btn i {
+                font-size: 20px;
+            }
+            
+            @media print {
+                body {
+                    background: white;
+                    padding: 0;
+                }
+                .receipt-container {
+                    box-shadow: none;
+                    padding: 15mm;
+                    width: 100%;
+                    min-height: auto;
+                }
+                .print-btn {
+                    display: none !important;
+                }
+                .no-print {
+                    display: none !important;
+                }
+            }
+            
+            /* ===== BANDE COLORÉE ===== */
+            .color-bar {
+                height: 6px;
+                background: linear-gradient(90deg, #4F46E5, #7C3AED, #EC4899, #10B981);
+                margin: -20mm -20mm 20px -20mm;
+                border-radius: 4px 4px 0 0;
+            }
+            
+            /* ===== VERSION MOBILE ===== */
+            @media (max-width: 600px) {
+                .receipt-container {
+                    padding: 10mm;
+                    width: 100%;
+                }
+                .color-bar {
+                    margin: -10mm -10mm 15px -10mm;
+                }
+                .header .school-name {
+                    font-size: 18px;
+                }
+                .payment-table {
+                    font-size: 11px;
+                }
+                .payment-table thead th,
+                .payment-table tbody td {
+                    padding: 6px 4px;
+                }
+                .info-section .info-row {
+                    font-size: 12px;
+                    flex-direction: column;
+                    gap: 2px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="receipt-container">
+            <!-- Bande colorée -->
+            <div class="color-bar"></div>
+            
+            <!-- EN-TÊTE -->
+            <div class="header">
+                <div class="country">RÉPUBLIQUE DÉMOCRATIQUE DU CONGO</div>
+                <div class="school-name">${school ? school.name : 'École'}</div>
+                <div class="school-info">
+                    ${school ? school.address || '' : ''} 
+                    ${school ? '• Tél: ' + school.phone || '' : ''}
+                    ${school ? '• Email: ' + school.email || '' : ''}
+                </div>
+                <div class="school-info" style="margin-top:2px;font-weight:bold;color:#4F46E5;">
+                    Système EduGest - Gestion Scolaire
+                </div>
+                <div class="receipt-title">Reçu de paiement</div>
+            </div>
+            
+            <!-- NUMÉRO DE REÇU -->
+            <div class="receipt-number">
+                <strong>N° Facture:</strong> ${payment.invoice} &nbsp;|&nbsp;
+                <strong>Date:</strong> ${payment.date || new Date().toLocaleDateString('fr-FR')}
+            </div>
+            
+            <!-- INFORMATIONS -->
+            <div class="info-section">
+                <div class="info-row">
+                    <span class="label">Étudiant:</span>
+                    <span class="value">${student ? `${student.first_name} ${student.last_name}` : payment.student}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Classe:</span>
+                    <span class="value">${student ? student.class : 'N/A'}</span>
+                </div>
+                ${parent ? `
+                <div class="info-row">
+                    <span class="label">Parent / Tuteur:</span>
+                    <span class="value">${parent.name}</span>
+                </div>
+                ` : ''}
+                <div class="info-row">
+                    <span class="label">Type de paiement:</span>
+                    <span class="value">${payment.type}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Méthode:</span>
+                    <span class="value">${payment.method}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Statut:</span>
+                    <span class="value" style="color:#10B981;font-weight:bold;">✓ Payé</span>
+                </div>
+            </div>
+            
+            <!-- TABLEAU -->
+            <table class="payment-table">
+                <thead>
+                    <tr>
+                        <th style="width:50%;">Désignation</th>
+                        <th style="width:25%;" class="text-center">Montant</th>
+                        <th style="width:25%;" class="text-center">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>${payment.type} - ${payment.month || payment.date || 'Paiement'}</td>
+                        <td class="text-right">${payment.amount.toLocaleString()} FCFA</td>
+                        <td class="text-right">${payment.amount.toLocaleString()} FCFA</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="2" class="text-right"><strong>TOTAL</strong></td>
+                        <td class="text-right"><strong>${payment.amount.toLocaleString()} FCFA</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- RÉSUMÉ -->
+            <div class="summary">
+                <div class="summary-row">
+                    <span>Montant payé:</span>
+                    <span>${payment.amount.toLocaleString()} FCFA</span>
+                </div>
+                <div class="summary-row">
+                    <span>Méthode de paiement:</span>
+                    <span>${payment.method}</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total réglé:</span>
+                    <span>${payment.amount.toLocaleString()} FCFA</span>
+                </div>
+            </div>
+            
+            <!-- MENTIONS LÉGALES -->
+            <div class="footer">
+                <div style="font-size:11px;font-weight:bold;color:#1a1a2e;">
+                    Reçu valable comme justificatif de paiement
+                </div>
+                <div>
+                    ${school ? school.name : 'École'} - EduGest ${new Date().getFullYear()}
+                </div>
+                <div style="font-size:9px;color:#aaa;">
+                    Document généré automatiquement par le système EduGest le ${new Date().toLocaleString('fr-FR')}
+                </div>
+                
+                <div class="signature">
+                    <div>
+                        <div class="line">Signature du parent</div>
+                    </div>
+                    <div>
+                        <div class="line">Signature de l'école</div>
+                    </div>
+                    <div>
+                        <div class="line">Cachet de l'école</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- BOUTON IMPRIMER -->
+        <button class="print-btn" onclick="window.print()">
+            <i class="bi bi-printer"></i> Imprimer le reçu
+        </button>
+        
+        <script>
+            // Auto-impression après chargement
+            // Décommentez la ligne ci-dessous pour imprimer automatiquement
+            // window.onload = function() { setTimeout(window.print, 1000); }
+        </script>
+    </body>
+    </html>
+    `;
+    
+    receiptWindow.document.write(receiptHTML);
+    receiptWindow.document.close();
+    
+    showToast('📄 Reçu généré avec succès !', 'success');
+}
+
+// ===== GÉNÉRER UN REÇU POUR UN ÉTUDIANT =====
+function generateStudentReceipt(studentId) {
+    const student = DB.students.find(s => s.id === studentId);
+    if (!student) {
+        showToast('Étudiant non trouvé', 'error');
+        return;
+    }
+    
+    // Récupérer tous les paiements validés de l'étudiant
+    const payments = DB.payments.filter(p => 
+        p.student_id === studentId && 
+        p.status === 'completed'
+    );
+    
+    if (payments.length === 0) {
+        showToast('Aucun paiement validé pour cet étudiant', 'warning');
+        return;
+    }
+    
+    const school = DB.schools.find(s => s.id === student.school_id);
+    const parent = DB.parentAccounts.find(p => p.children_ids.includes(student.id));
+    const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0);
+    
+    // Créer la fenêtre d'impression
+    const receiptWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
+    
+    const receiptHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Reçu global - ${student.first_name} ${student.last_name}</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            
+            body {
+                font-family: 'Times New Roman', serif;
+                background: #f0f0f0;
+                padding: 20px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+            }
+            
+            .receipt-container {
+                background: white;
+                width: 210mm;
+                min-height: 297mm;
+                padding: 20mm;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+                position: relative;
+            }
+            
+            .header {
+                text-align: center;
+                border-bottom: 3px double #1a1a2e;
+                padding-bottom: 15px;
+                margin-bottom: 20px;
+            }
+            
+            .header .country {
+                font-size: 11px;
+                letter-spacing: 3px;
+                color: #666;
+                text-transform: uppercase;
+                font-weight: bold;
+            }
+            
+            .header .school-name {
+                font-size: 22px;
+                font-weight: bold;
+                color: #1a1a2e;
+                margin: 5px 0;
+                text-transform: uppercase;
+            }
+            
+            .header .school-info {
+                font-size: 11px;
+                color: #555;
+                line-height: 1.6;
+            }
+            
+            .header .receipt-title {
+                font-size: 18px;
+                font-weight: bold;
+                color: #1a1a2e;
+                margin-top: 10px;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                border: 2px solid #1a1a2e;
+                display: inline-block;
+                padding: 5px 30px;
+                border-radius: 4px;
+            }
+            
+            .info-section {
+                margin: 15px 0;
+                padding: 10px;
+                background: #f8f9fa;
+                border-radius: 4px;
+                border-left: 4px solid #4F46E5;
+            }
+            
+            .info-section .info-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 4px 0;
+                font-size: 13px;
+                border-bottom: 1px dotted #e9ecef;
+            }
+            
+            .info-section .info-row:last-child {
+                border-bottom: none;
+            }
+            
+            .info-section .label {
+                font-weight: 600;
+                color: #495057;
+            }
+            
+            .info-section .value {
+                color: #212529;
+            }
+            
+            .payment-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+                font-size: 12px;
+            }
+            
+            .payment-table thead th {
+                background: #1a1a2e;
+                color: white;
+                padding: 10px 8px;
+                text-align: left;
+                border: 1px solid #1a1a2e;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            .payment-table tbody td {
+                padding: 8px 8px;
+                border: 1px solid #dee2e6;
+            }
+            
+            .payment-table tbody tr:nth-child(even) {
+                background: #f8f9fa;
+            }
+            
+            .payment-table .text-right {
+                text-align: right;
+            }
+            
+            .payment-table .text-center {
+                text-align: center;
+            }
+            
+            .payment-table .total-row {
+                background: #1a1a2e !important;
+                color: white;
+                font-weight: bold;
+            }
+            
+            .payment-table .total-row td {
+                border-color: #1a1a2e;
+            }
+            
+            .summary {
+                margin: 20px 0;
+                padding: 15px;
+                background: #f8f9fa;
+                border-radius: 4px;
+                border: 2px solid #dee2e6;
+            }
+            
+            .summary .summary-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 5px 0;
+                font-size: 14px;
+            }
+            
+            .summary .summary-row.total {
+                font-size: 16px;
+                font-weight: bold;
+                border-top: 2px solid #1a1a2e;
+                padding-top: 10px;
+                margin-top: 5px;
+                color: #1a1a2e;
+            }
+            
+            .footer {
+                margin-top: 30px;
+                padding-top: 15px;
+                border-top: 2px solid #dee2e6;
+                text-align: center;
+                font-size: 10px;
+                color: #888;
+                line-height: 1.8;
+            }
+            
+            .footer .signature {
+                margin-top: 20px;
+                display: flex;
+                justify-content: space-around;
+                font-size: 12px;
+                color: #555;
+            }
+            
+            .footer .signature .line {
+                width: 150px;
+                border-top: 1px solid #333;
+                margin-top: 30px;
+                padding-top: 5px;
+            }
+            
+            .print-btn {
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                background: #4F46E5;
+                color: white;
+                border: none;
+                padding: 14px 28px;
+                border-radius: 50px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                box-shadow: 0 4px 15px rgba(79,70,229,0.4);
+                transition: all 0.3s;
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .print-btn:hover {
+                background: #4338CA;
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(79,70,229,0.5);
+            }
+            
+            .print-btn i {
+                font-size: 20px;
+            }
+            
+            @media print {
+                body {
+                    background: white;
+                    padding: 0;
+                }
+                .receipt-container {
+                    box-shadow: none;
+                    padding: 15mm;
+                    width: 100%;
+                    min-height: auto;
+                }
+                .print-btn {
+                    display: none !important;
+                }
+                .no-print {
+                    display: none !important;
+                }
+            }
+            
+            .color-bar {
+                height: 6px;
+                background: linear-gradient(90deg, #4F46E5, #7C3AED, #EC4899, #10B981);
+                margin: -20mm -20mm 20px -20mm;
+                border-radius: 4px 4px 0 0;
+            }
+            
+            @media (max-width: 600px) {
+                .receipt-container {
+                    padding: 10mm;
+                    width: 100%;
+                }
+                .color-bar {
+                    margin: -10mm -10mm 15px -10mm;
+                }
+                .header .school-name {
+                    font-size: 18px;
+                }
+                .payment-table {
+                    font-size: 10px;
+                }
+                .payment-table thead th,
+                .payment-table tbody td {
+                    padding: 4px 3px;
+                }
+                .info-section .info-row {
+                    font-size: 11px;
+                    flex-direction: column;
+                    gap: 2px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="receipt-container">
+            <div class="color-bar"></div>
+            
+            <div class="header">
+                <div class="country">RÉPUBLIQUE DÉMOCRATIQUE DU CONGO</div>
+                <div class="school-name">${school ? school.name : 'École'}</div>
+                <div class="school-info">
+                    ${school ? school.address || '' : ''} 
+                    ${school ? '• Tél: ' + school.phone || '' : ''}
+                    ${school ? '• Email: ' + school.email || '' : ''}
+                </div>
+                <div class="school-info" style="margin-top:2px;font-weight:bold;color:#4F46E5;">
+                    Système EduGest - Gestion Scolaire
+                </div>
+                <div class="receipt-title">Reçu global de paiement</div>
+            </div>
+            
+            <div class="receipt-number">
+                <strong>Étudiant:</strong> ${student.first_name} ${student.last_name} &nbsp;|&nbsp;
+                <strong>Classe:</strong> ${student.class} &nbsp;|&nbsp;
+                <strong>Date:</strong> ${new Date().toLocaleDateString('fr-FR')}
+            </div>
+            
+            <div class="info-section">
+                <div class="info-row">
+                    <span class="label">Étudiant:</span>
+                    <span class="value">${student.first_name} ${student.last_name}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Classe:</span>
+                    <span class="value">${student.class}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Matricule:</span>
+                    <span class="value">${student.matricule}</span>
+                </div>
+                ${parent ? `
+                <div class="info-row">
+                    <span class="label">Parent / Tuteur:</span>
+                    <span class="value">${parent.name}</span>
+                </div>
+                ` : ''}
+                <div class="info-row">
+                    <span class="label">École:</span>
+                    <span class="value">${student.school}</span>
+                </div>
+            </div>
+            
+            <table class="payment-table">
+                <thead>
+                    <tr>
+                        <th style="width:20%;">Facture</th>
+                        <th style="width:25%;">Type</th>
+                        <th style="width:20%;" class="text-center">Méthode</th>
+                        <th style="width:20%;" class="text-right">Montant</th>
+                        <th style="width:15%;" class="text-center">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${payments.map(p => `
+                        <tr>
+                            <td>${p.invoice}</td>
+                            <td>${p.type}</td>
+                            <td class="text-center">${p.method}</td>
+                            <td class="text-right">${p.amount.toLocaleString()} FCFA</td>
+                            <td class="text-center">${p.date || 'N/A'}</td>
+                        </tr>
+                    `).join('')}
+                    <tr class="total-row">
+                        <td colspan="3" class="text-right"><strong>TOTAL</strong></td>
+                        <td class="text-right"><strong>${totalAmount.toLocaleString()} FCFA</strong></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="summary">
+                <div class="summary-row">
+                    <span>Nombre de paiements:</span>
+                    <span>${payments.length}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Montant total payé:</span>
+                    <span>${totalAmount.toLocaleString()} FCFA</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total général:</span>
+                    <span>${totalAmount.toLocaleString()} FCFA</span>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <div style="font-size:11px;font-weight:bold;color:#1a1a2e;">
+                    Reçu valable comme justificatif de paiement
+                </div>
+                <div>
+                    ${school ? school.name : 'École'} - EduGest ${new Date().getFullYear()}
+                </div>
+                <div style="font-size:9px;color:#aaa;">
+                    Document généré automatiquement par le système EduGest le ${new Date().toLocaleString('fr-FR')}
+                </div>
+                
+                <div class="signature">
+                    <div>
+                        <div class="line">Signature du parent</div>
+                    </div>
+                    <div>
+                        <div class="line">Signature de l'école</div>
+                    </div>
+                    <div>
+                        <div class="line">Cachet de l'école</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="print-btn" onclick="window.print()">
+            <i class="bi bi-printer"></i> Imprimer le reçu
+        </button>
+    </body>
+    </html>
+    `;
+    
+    receiptWindow.document.write(receiptHTML);
+    receiptWindow.document.close();
+    
+    showToast('📄 Reçu global généré avec succès !', 'success');
+}
+
+// ===== AJOUTER DES BOUTONS DANS LA LISTE DES PAIEMENTS =====
+// Modifier la fonction loadPayments pour ajouter le bouton "Reçu"
+
+function loadPayments(filterFn) {
+    const payments = filterFn ? filterFn(DB.payments, 'student_id') : DB.payments;
+    const tbody = document.getElementById('paymentsList');
+    
+    if (payments.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-secondary py-4">Aucun paiement</td></tr>`;
+        return;
+    }
+    
+    tbody.innerHTML = payments.map(p => {
+        const statusClass = p.status === 'completed' ? 'bg-success-light' : 'bg-warning-light';
+        return `
+            <tr>
+                <td><strong>${p.invoice}</strong></td>
+                <td>${p.student}</td>
+                <td><strong>${p.amount.toLocaleString()} FCFA</strong></td>
+                <td>${p.method}</td>
+                <td>${p.type}</td>
+                <td><span class="badge badge-custom ${statusClass}">${p.status === 'completed' ? 'Payé' : 'En attente'}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewPayment(${p.id})"><i class="bi bi-eye"></i></button>
+                    ${p.status === 'pending' ? 
+                        `<button class="btn btn-sm btn-success" onclick="validatePayment(${p.id})"><i class="bi bi-check-lg"></i></button>` : 
+                        `<button class="btn btn-sm btn-success" onclick="generateReceipt(${p.id})"><i class="bi bi-receipt"></i></button>`
+                    }
+                    <button class="btn btn-sm btn-outline-danger" onclick="deletePayment(${p.id})"><i class="bi bi-trash"></i></button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+// ============================================================
+// 10. MESSAGES
+// ============================================================
+
+function loadMessages() {
+    const container = document.getElementById('messagesList');
+    const messages = DB.messages;
+    
+    if (messages.length === 0) {
+        container.innerHTML = '<div class="text-center text-secondary py-4">Aucun message</div>';
+        return;
+    }
+    
+    container.innerHTML = messages.map(m => `
+        <div class="d-flex justify-content-between align-items-center py-3 border-bottom ${m.read ? '' : 'bg-light'}">
+            <div class="flex-grow-1">
+                <div class="fw-semibold">${m.sender} → ${m.receiver}</div>
+                <div class="small fw-medium">${m.subject}</div>
+                <div class="text-secondary small">${m.content}</div>
+            </div>
+            <div class="text-end ms-3" style="min-width:80px;">
+                <div class="small text-secondary">${m.date}</div>
+                ${!m.read ? '<span class="badge bg-primary">Nouveau</span>' : ''}
+                <button class="btn btn-sm btn-outline-primary d-block mt-1" onclick="markMessageRead(${m.id})"><i class="bi bi-check"></i></button>
+            </div>
+        </div>
+    `).join('');
+    
+    document.getElementById('messageCount').textContent = messages.filter(m => !m.read).length;
+}
+
+function showMessageForm() {
+    showModal('✉️ Nouveau message', `
+        <form id="messageForm">
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Destinataire</label>
+                    <select class="form-select" id="messageReceiver">
+                        <option value="Tous">Tous</option>
+                        ${DB.parentAccounts.map(p => `<option value="Parent">Parent - ${p.name}</option>`).join('')}
+                        ${DB.teachers.map(t => `<option value="Enseignant">Enseignant - ${t.first_name} ${t.last_name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Sujet</label>
+                    <input type="text" class="form-control" id="messageSubject" placeholder="Sujet du message" required>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Contenu</label>
+                    <textarea class="form-control" id="messageContent" rows="4" placeholder="Écrivez votre message..." required></textarea>
+                </div>
+            </div>
+        </form>
+    `, () => {
+        const receiver = document.getElementById('messageReceiver').value;
+        const subject = document.getElementById('messageSubject').value;
+        const content = document.getElementById('messageContent').value;
+        
+        if (!subject || !content) {
+            showToast('Veuillez remplir tous les champs', 'error');
+            return;
+        }
+
+        DB.messages.push({
+            id: DB.messages.length + 1,
+            sender: userRole === 'admin' ? 'Administration' : userRole === 'parent' ? 'Parent' : 'Enseignant',
+            sender_id: currentUser?.id || 0,
+            receiver: receiver,
+            receiver_id: 0,
+            subject: subject,
+            content: content,
+            date: new Date().toISOString().split('T')[0],
+            read: false
+        });
+        
+        closeModal();
+        showToast('Message envoyé avec succès !', 'success');
+        loadPageData('messages');
+    });
+}
+
+function markMessageRead(id) {
+    const message = DB.messages.find(m => m.id === id);
+    if (message) {
+        message.read = true;
+        loadPageData('messages');
+    }
+}
+// ============================================================
+// 10. MESSAGES
+// ============================================================
+
+function loadMessages() {
+    const container = document.getElementById('messagesList');
+    const messages = DB.messages;
+    
+    if (messages.length === 0) {
+        container.innerHTML = '<div class="text-center text-secondary py-4">Aucun message</div>';
+        return;
+    }
+    
+    container.innerHTML = messages.map(m => `
+        <div class="d-flex justify-content-between align-items-center py-3 border-bottom ${m.read ? '' : 'bg-light'}">
+            <div class="flex-grow-1">
+                <div class="fw-semibold">${m.sender} → ${m.receiver}</div>
+                <div class="small fw-medium">${m.subject}</div>
+                <div class="text-secondary small">${m.content}</div>
+            </div>
+            <div class="text-end ms-3" style="min-width:80px;">
+                <div class="small text-secondary">${m.date}</div>
+                ${!m.read ? '<span class="badge bg-primary">Nouveau</span>' : ''}
+                <button class="btn btn-sm btn-outline-primary d-block mt-1" onclick="markMessageRead(${m.id})"><i class="bi bi-check"></i></button>
+            </div>
+        </div>
+    `).join('');
+    
+    document.getElementById('messageCount').textContent = messages.filter(m => !m.read).length;
+}
+
+function showMessageForm() {
+    showModal('✉️ Nouveau message', `
+        <form id="messageForm">
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Destinataire</label>
+                    <select class="form-select" id="messageReceiver">
+                        <option value="Tous">Tous</option>
+                        ${DB.parentAccounts.map(p => `<option value="Parent">Parent - ${p.name}</option>`).join('')}
+                        ${DB.teachers.map(t => `<option value="Enseignant">Enseignant - ${t.first_name} ${t.last_name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Sujet</label>
+                    <input type="text" class="form-control" id="messageSubject" placeholder="Sujet du message" required>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Contenu</label>
+                    <textarea class="form-control" id="messageContent" rows="4" placeholder="Écrivez votre message..." required></textarea>
+                </div>
+            </div>
+        </form>
+    `, () => {
+        const receiver = document.getElementById('messageReceiver').value;
+        const subject = document.getElementById('messageSubject').value;
+        const content = document.getElementById('messageContent').value;
+        
+        if (!subject || !content) {
+            showToast('Veuillez remplir tous les champs', 'error');
+            return;
+        }
+
+        DB.messages.push({
+            id: DB.messages.length + 1,
+            sender: userRole === 'admin' ? 'Administration' : userRole === 'parent' ? 'Parent' : 'Enseignant',
+            sender_id: currentUser?.id || 0,
+            receiver: receiver,
+            receiver_id: 0,
+            subject: subject,
+            content: content,
+            date: new Date().toISOString().split('T')[0],
+            read: false
+        });
+        
+        closeModal();
+        showToast('Message envoyé avec succès !', 'success');
+        loadPageData('messages');
+    });
+}
+
+function markMessageRead(id) {
+    const message = DB.messages.find(m => m.id === id);
+    if (message) {
+        message.read = true;
+        loadPageData('messages');
+    }
+}
+
+// ============================================================
+// 11. ÉCOLES
+// ============================================================
+
+function loadSchools() {
+    const container = document.getElementById('schoolsList');
+    const schools = userRole === 'admin' ? DB.schools : DB.schools.filter(s => s.id === userSchoolId);
+    
+    container.innerHTML = schools.map(s => {
+        const account = DB.schoolAccounts.find(a => a.school_id === s.id);
+        const studentsCount = DB.students.filter(st => st.school_id === s.id).length;
+        const paymentsCount = DB.payments.filter(p => p.school_id === s.id).length;
+        const totalRevenue = DB.payments
+            .filter(p => p.school_id === s.id && p.status === 'completed')
+            .reduce((sum, p) => sum + p.amount, 0);
+            
+        return `
+            <div class="col-md-6">
+                <div class="p-3 border rounded-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div><strong class="fs-5">${s.name}</strong><div class="text-secondary small">${s.code}</div></div>
+                        <span class="badge badge-custom ${s.status === 'Actif' ? 'bg-success-light' : 'bg-warning-light'}">${s.status}</span>
+                    </div>
+                    <div class="mt-2 text-secondary small">
+                        <div><i class="bi bi-telephone me-2"></i> ${s.phone}</div>
+                        <div><i class="bi bi-envelope me-2"></i> ${s.email}</div>
+                        <div><i class="bi bi-people me-2"></i> ${studentsCount} étudiants</div>
+                        <div><i class="bi bi-credit-card me-2"></i> ${paymentsCount} paiements - ${totalRevenue.toLocaleString()} FCFA</div>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-secondary small">Code :</span>
+                            <code style="background:#eef2ff;padding:2px 8px;border-radius:4px;font-weight:700;color:var(--primary);">${account?.code || 'N/A'}</code>
+                        </div>
+                        <div>
+                            ${userRole === 'admin' ? `
+                                <button class="btn btn-sm btn-outline-warning" onclick="editSchool(${s.id})"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteSchool(${s.id})"><i class="bi bi-trash"></i></button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+function showSchoolForm() {
+    if (userRole !== 'admin') {
+        showToast('Seul l\'administrateur peut ajouter une ecole', 'error');
+        return;
+    }
+    
+    showModal('Ajouter une ecole', `
+        <form id="schoolForm">
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Nom de l'ecole</label>
+                    <input type="text" class="form-control" id="schoolName" placeholder="Nom" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Telephone</label>
+                    <input type="text" class="form-control" id="schoolPhone" placeholder="77 123 45 67">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Email</label>
+                    <input type="email" class="form-control" id="schoolEmail" placeholder="email@exemple.com">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Adresse</label>
+                    <input type="text" class="form-control" id="schoolAddress" placeholder="Adresse">
+                </div>
+            </div>
+        </form>
+    `, () => {
+        const name = document.getElementById('schoolName').value;
+        const phone = document.getElementById('schoolPhone').value;
+        const email = document.getElementById('schoolEmail').value;
+        const address = document.getElementById('schoolAddress').value;
+        
+        if (!name) {
+            showToast('Veuillez entrer le nom de l\'ecole', 'error');
+            return;
+        }
+
+        const newSchool = {
+            id: DB.schools.length + 1,
+            name: name,
+            code: `SCH-${String(DB.schools.length + 1).padStart(3, '0')}`,
+            phone: phone || 'Non renseigne',
+            email: email || 'Non renseigne',
+            address: address || 'Non renseigne',
+            status: 'Actif'
+        };
+        
+        DB.schools.push(newSchool);
+        
+        const newAccount = {
+            id: DB.schoolAccounts.length + 1,
+            school_id: newSchool.id,
+            school_name: name,
+            code: newSchool.code,
+            password: `${name.toLowerCase().replace(/\s/g, '')}2025`,
+            email: email || `contact@${name.toLowerCase().replace(/\s/g, '')}.sn`,
+            phone: phone || 'Non renseigne'
+        };
+        DB.schoolAccounts.push(newAccount);
+        
+        NotificationSystem.sendToAll(
+            `<strong>${name}</strong> a rejoint la plateforme EduGest`,
+            'success'
+        );
+        
+        NotificationSystem.send('admin', 
+            `<strong>${name}</strong> a ete ajoutee avec le code d'acces <strong>${newSchool.code}</strong>`,
+            'info'
+        );
+        
+        SyncSystem.sync();
+        
+        closeModal();
+        showToast(`Ecole ${name} ajoutee avec succès !`, 'success');
+        showToast(`📋 Code d'acces : ${newSchool.code} - Mot de passe : ${newAccount.password}`, 'info');
+        loadPageData('schools');
+        loadPageData('dashboard');
+    });
+}
+
+function editSchool(id) {
+    if (userRole !== 'admin') {
+        showToast('Seul l\'administrateur peut modifier une école', 'error');
+        return;
+    }
+    
+    const school = DB.schools.find(s => s.id === id);
+    if (!school) return;
+    
+    showModal(`✏️ Modifier ${school.name}`, `
+        <form id="editSchoolForm">
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Nom de l'école</label>
+                    <input type="text" class="form-control" id="editSchoolName" value="${school.name}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Téléphone</label>
+                    <input type="text" class="form-control" id="editSchoolPhone" value="${school.phone}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Email</label>
+                    <input type="email" class="form-control" id="editSchoolEmail" value="${school.email}">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Adresse</label>
+                    <input type="text" class="form-control" id="editSchoolAddress" value="${school.address}">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Statut</label>
+                    <select class="form-select" id="editSchoolStatus">
+                        <option value="Actif" ${school.status === 'Actif' ? 'selected' : ''}>Actif</option>
+                        <option value="Inactif" ${school.status === 'Inactif' ? 'selected' : ''}>Inactif</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+    `, () => {
+        const name = document.getElementById('editSchoolName').value;
+        const phone = document.getElementById('editSchoolPhone').value;
+        const email = document.getElementById('editSchoolEmail').value;
+        const address = document.getElementById('editSchoolAddress').value;
+        const status = document.getElementById('editSchoolStatus').value;
+        
+        if (!name) {
+            showToast('Veuillez entrer le nom de l\'école', 'error');
+            return;
+        }
+
+        school.name = name;
+        school.phone = phone || 'Non renseigné';
+        school.email = email || 'Non renseigné';
+        school.address = address || 'Non renseigné';
+        school.status = status;
+        
+        // Mettre à jour le compte
+        const account = DB.schoolAccounts.find(a => a.school_id === id);
+        if (account) {
+            account.school_name = name;
+            account.email = email || account.email;
+            account.phone = phone || account.phone;
+        }
+        
+        closeModal();
+        showToast(`École ${name} modifiée avec succès !`, 'success');
+        loadPageData('schools');
+        loadPageData('dashboard');
+    });
+}
+
+function deleteSchool(id) {
+    if (userRole !== 'admin') {
+        showToast('Seul l\'administrateur peut supprimer une école', 'error');
+        return;
+    }
+    
+    if (!confirm('Voulez-vous vraiment supprimer cette école ?')) return;
+    const school = DB.schools.find(s => s.id === id);
+    if (!school) return;
+    
+    // Supprimer les étudiants liés
+    DB.students = DB.students.filter(s => s.school_id !== id);
+    // Supprimer les paiements liés
+    DB.payments = DB.payments.filter(p => p.school_id !== id);
+    // Supprimer le compte
+    DB.schoolAccounts = DB.schoolAccounts.filter(a => a.school_id !== id);
+    // Supprimer l'école
+    DB.schools = DB.schools.filter(s => s.id !== id);
+    
+    showToast(`École ${school.name} supprimée avec succès !`, 'success');
+    loadPageData('schools');
+    loadPageData('dashboard');
+}
+
+// ============================================================
+// 12. PARENTS
+// ============================================================
+
+function loadParents() {
+    const container = document.getElementById('parentsList');
+    container.innerHTML = `
+        <div class="table-responsive">
+            <table class="table table-edugest">
+                <thead>
+                    <tr><th>Nom</th><th>Code</th><th>Email</th><th>Téléphone</th><th>Enfants</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    ${DB.parentAccounts.map(p => `
+                        <tr>
+                            <td><strong>${p.name}</strong></td>
+                            <td><code style="background:#fdf2f8;padding:2px 8px;border-radius:4px;font-weight:700;color:var(--parent-color);">${p.code}</code></td>
+                            <td>${p.email}</td>
+                            <td>${p.phone}</td>
+                            <td>${p.children_ids.map(id => {
+                                const child = DB.students.find(s => s.id === id);
+                                return child ? `${child.first_name} ${child.last_name}` : 'N/A';
+                            }).join(', ')}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewParent(${p.id})"><i class="bi bi-eye"></i></button>
+                                ${userRole === 'admin' ? `
+                                    <button class="btn btn-sm btn-outline-warning" onclick="editParent(${p.id})"><i class="bi bi-pencil"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteParent(${p.id})"><i class="bi bi-trash"></i></button>
+                                ` : ''}
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function showParentForm() {
+    if (userRole !== 'admin') {
+        showToast('Seul l\'administrateur peut ajouter un parent', 'error');
+        return;
+    }
+    
+    showModal('👨‍👩‍👧 Ajouter un parent', `
+        <form id="parentForm">
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Nom complet</label>
+                    <input type="text" class="form-control" id="parentName" placeholder="Nom et prénom" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Email</label>
+                    <input type="email" class="form-control" id="parentEmail" placeholder="email@exemple.com">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Téléphone</label>
+                    <input type="text" class="form-control" id="parentPhone" placeholder="77 123 45 67">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Enfants</label>
+                    <select class="form-select" id="parentChildren" multiple style="height:100px;">
+                        ${DB.students.map(s => `<option value="${s.id}">${s.first_name} ${s.last_name} - ${s.class}</option>`).join('')}
+                    </select>
+                    <small class="text-secondary">Maintenez Ctrl pour sélectionner plusieurs enfants</small>
+                </div>
+            </div>
+        </form>
+    `, () => {
+        const name = document.getElementById('parentName').value;
+        const email = document.getElementById('parentEmail').value;
+        const phone = document.getElementById('parentPhone').value;
+        const childrenSelect = document.getElementById('parentChildren');
+        const childrenIds = Array.from(childrenSelect.selectedOptions).map(opt => parseInt(opt.value));
+        
+        if (!name) {
+            showToast('Veuillez entrer le nom du parent', 'error');
+            return;
+        }
+
+        const newParent = {
+            id: DB.parentAccounts.length + 1,
+            code: `PAR-${String(DB.parentAccounts.length + 1).padStart(3, '0')}`,
+            password: 'parent123',
+            name: name,
+            email: email || 'Non renseigné',
+            phone: phone || 'Non renseigné',
+            children_ids: childrenIds
+        };
+        
+        DB.parentAccounts.push(newParent);
+        
+        // Mettre à jour les étudiants avec le parent
+        childrenIds.forEach(childId => {
+            const student = DB.students.find(s => s.id === childId);
+            if (student) student.parent_id = newParent.id;
+        });
+        
+        closeModal();
+        showToast(`Parent ${name} ajouté avec succès !`, 'success');
+        loadPageData('parents');
+        loadPageData('dashboard');
+    });
+}
+
+function viewParent(id) {
+    const parent = DB.parentAccounts.find(p => p.id === id);
+    if (!parent) return;
+    const children = DB.students.filter(s => parent.children_ids.includes(s.id));
+    
+    showModal(`👤 ${parent.name}`, `
+        <div class="row g-3">
+            <div class="col-md-6"><strong>Code :</strong> <code style="background:#fdf2f8;padding:2px 8px;border-radius:4px;font-weight:700;color:var(--parent-color);">${parent.code}</code></div>
+            <div class="col-md-6"><strong>Email :</strong> ${parent.email}</div>
+            <div class="col-md-6"><strong>Téléphone :</strong> ${parent.phone}</div>
+            <div class="col-md-6"><strong>Enfants :</strong> ${children.length}</div>
+        </div>
+        <hr>
+        <h6>Liste des enfants</h6>
+        ${children.length === 0 ? '<p class="text-secondary">Aucun enfant</p>' :
+            children.map(c => `
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <div>
+                        <div class="fw-semibold">${c.first_name} ${c.last_name}</div>
+                        <div class="small text-secondary">${c.class} - ${c.school}</div>
+                    </div>
+                    <span class="badge badge-custom ${c.status === 'Actif' ? 'bg-success-light' : 'bg-warning-light'}">${c.status}</span>
+                </div>
+            `).join('')
+        }
+    `, null);
+}
+
+function editParent(id) {
+    if (userRole !== 'admin') {
+        showToast('Seul l\'administrateur peut modifier un parent', 'error');
+        return;
+    }
+    
+    const parent = DB.parentAccounts.find(p => p.id === id);
+    if (!parent) return;
+    
+    showModal(`✏️ Modifier ${parent.name}`, `
+        <form id="editParentForm">
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Nom complet</label>
+                    <input type="text" class="form-control" id="editParentName" value="${parent.name}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Email</label>
+                    <input type="email" class="form-control" id="editParentEmail" value="${parent.email}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Téléphone</label>
+                    <input type="text" class="form-control" id="editParentPhone" value="${parent.phone}">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Enfants</label>
+                    <select class="form-select" id="editParentChildren" multiple style="height:100px;">
+                        ${DB.students.map(s => `<option value="${s.id}" ${parent.children_ids.includes(s.id) ? 'selected' : ''}>${s.first_name} ${s.last_name} - ${s.class}</option>`).join('')}
+                    </select>
+                    <small class="text-secondary">Maintenez Ctrl pour sélectionner plusieurs enfants</small>
+                </div>
+            </div>
+        </form>
+    `, () => {
+        const name = document.getElementById('editParentName').value;
+        const email = document.getElementById('editParentEmail').value;
+        const phone = document.getElementById('editParentPhone').value;
+        const childrenSelect = document.getElementById('editParentChildren');
+        const childrenIds = Array.from(childrenSelect.selectedOptions).map(opt => parseInt(opt.value));
+        
+        if (!name) {
+            showToast('Veuillez entrer le nom du parent', 'error');
+            return;
+        }
+
+        // Retirer les anciens enfants
+        parent.children_ids.forEach(childId => {
+            const student = DB.students.find(s => s.id === childId);
+            if (student && student.parent_id === parent.id) student.parent_id = null;
+        });
+        
+        // Mettre à jour
+        parent.name = name;
+        parent.email = email || 'Non renseigné';
+        parent.phone = phone || 'Non renseigné';
+        parent.children_ids = childrenIds;
+        
+        // Mettre à jour les étudiants
+        childrenIds.forEach(childId => {
+            const student = DB.students.find(s => s.id === childId);
+            if (student) student.parent_id = parent.id;
+        });
+        
+        closeModal();
+        showToast(`Parent ${name} modifié avec succès !`, 'success');
+        loadPageData('parents');
+        loadPageData('dashboard');
+    });
+}
+
+function deleteParent(id) {
+    if (userRole !== 'admin') {
+        showToast('Seul l\'administrateur peut supprimer un parent', 'error');
+        return;
+    }
+    
+    if (!confirm('Voulez-vous vraiment supprimer ce parent ?')) return;
+    const parent = DB.parentAccounts.find(p => p.id === id);
+    if (!parent) return;
+    
+    // Retirer l'association avec les étudiants
+    parent.children_ids.forEach(childId => {
+        const student = DB.students.find(s => s.id === childId);
+        if (student) student.parent_id = null;
+    });
+    
+    DB.parentAccounts = DB.parentAccounts.filter(p => p.id !== id);
+    showToast(`Parent supprimé avec succès !`, 'success');
+    loadPageData('parents');
+    loadPageData('dashboard');
+}
+
+// ============================================================
+// 13. ENSEIGNANTS
+// ============================================================
+
+
+function loadTeachers(filterFn) {
+    const container = document.getElementById('teachersList');
+    const teachers = filterFn ? filterFn(DB.teachers, 'school_id') : DB.teachers;
+    
+    if (teachers.length === 0) {
+        container.innerHTML = '<div class="text-center text-secondary py-4">Aucun enseignant</div>';
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="table-responsive">
+            <table class="table table-edugest">
+                <thead>
+                    <tr>
+                        <th>Photo</th>
+                        <th>Matricule</th>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>École</th>
+                        <th>Cours</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${teachers.map(t => `
+                        <tr>
+                            <td>
+                                <div class="avatar-mini" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,${getTeacherColor(t.id)},#7C3AED);display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:0.9rem;">
+                                    ${t.first_name.charAt(0)}${t.last_name.charAt(0)}
+                                </div>
+                            </td>
+                            <td><strong>${t.matricule || 'TCH-' + String(t.id).padStart(3, '0')}</strong></td>
+                            <td>${t.last_name}</td>
+                            <td>${t.first_name}</td>
+                            <td>${t.school}</td>
+                            <td><span class="badge badge-custom bg-info-light">${t.subject}</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewTeacher(${t.id})"><i class="bi bi-eye"></i></button>
+                                ${userRole === 'admin' ? `
+                                    <button class="btn btn-sm btn-outline-warning" onclick="editTeacher(${t.id})"><i class="bi bi-pencil"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTeacher(${t.id})"><i class="bi bi-trash"></i></button>
+                                ` : ''}
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+// ===== GÉNÉRER UNE COULEUR POUR L'AVATAR =====
+function getTeacherColor(id) {
+    const colors = ['#4F46E5', '#7C3AED', '#EC4899', '#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#8B5CF6'];
+    return colors[id % colors.length];
+}
+
+// ===== VOIR LES DÉTAILS D'UN ENSEIGNANT (VERSION SIMPLIFIÉE) =====
+function viewTeacher(id) {
+    const teacher = DB.teachers.find(t => t.id === id);
+    if (!teacher) {
+        showToast('Enseignant non trouvé', 'error');
+        return;
+    }
+
+    // Récupérer les cours de l'enseignant (matières)
+    const subjects = teacher.subject.split(',').map(s => s.trim());
+    
+    // Récupérer les classes de l'enseignant
+    const classes = DB.classes.filter(c => c.teacher_id === id);
+    
+    // Récupérer le nombre d'étudiants
+    const classNames = classes.map(c => c.name);
+    const studentsCount = DB.students.filter(s => classNames.includes(s.class) && s.school_id === teacher.school_id).length;
+
+    // Générer une couleur pour l'avatar
+    const avatarColor = getTeacherColor(teacher.id);
+    const initials = teacher.first_name.charAt(0) + teacher.last_name.charAt(0);
+
+    showModal(`👨‍🏫 ${teacher.first_name} ${teacher.last_name}`, `
+        <div class="row g-4">
+            <!-- Photo / Avatar -->
+            <div class="col-md-4 text-center">
+                <div style="width:150px;height:150px;border-radius:50%;background:linear-gradient(135deg,${avatarColor},${avatarColor}dd);display:inline-flex;align-items:center;justify-content:center;color:white;font-size:4rem;font-weight:700;box-shadow:0 8px 25px rgba(0,0,0,0.15);margin-bottom:10px;">
+                    ${initials}
+                </div>
+                <div class="mt-2">
+                    <span class="badge badge-custom bg-primary-light">${teacher.subject}</span>
+                </div>
+                <div class="mt-1">
+                    <small class="text-secondary">Matricule: ${teacher.matricule || 'TCH-' + String(teacher.id).padStart(3, '0')}</small>
+                </div>
+            </div>
+
+            <!-- Informations personnelles -->
+            <div class="col-md-8">
+                <div class="p-3 bg-light rounded-3">
+                    <h6 class="fw-bold"><i class="bi bi-person-badge" style="color:var(--info);"></i> Informations personnelles</h6>
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <strong>Nom complet :</strong> 
+                            <span class="d-block">${teacher.first_name} ${teacher.last_name}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Matricule :</strong>
+                            <span class="d-block"><code style="background:#eef2ff;padding:2px 8px;border-radius:4px;font-weight:700;color:var(--primary);">${teacher.matricule || 'TCH-' + String(teacher.id).padStart(3, '0')}</code></span>
+                        </div>
+                        <div class="col-md-6 mt-2">
+                            <strong>École :</strong>
+                            <span class="d-block"><i class="bi bi-building" style="color:var(--primary);"></i> ${teacher.school}</span>
+                        </div>
+                        <div class="col-md-6 mt-2">
+                            <strong>Email :</strong>
+                            <span class="d-block"><i class="bi bi-envelope" style="color:var(--info);"></i> ${teacher.email || 'Non renseigné'}</span>
+                        </div>
+                        <div class="col-md-6 mt-2">
+                            <strong>Téléphone :</strong>
+                            <span class="d-block"><i class="bi bi-telephone" style="color:var(--success);"></i> ${teacher.phone || 'Non renseigné'}</span>
+                        </div>
+                        <div class="col-md-6 mt-2">
+                            <strong>Statut :</strong>
+                            <span class="d-block"><span class="badge bg-success">Actif</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cours enseignés -->
+            <div class="col-12">
+                <div class="p-3 bg-light rounded-3">
+                    <h6 class="fw-bold"><i class="bi bi-book" style="color:var(--warning);"></i> Cours enseignés</h6>
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                        ${subjects.map(s => `
+                            <span class="badge badge-custom bg-primary-light" style="font-size:0.9rem;padding:6px 14px;">
+                                <i class="bi bi-journal-text"></i> ${s}
+                            </span>
+                        `).join('')}
+                        ${subjects.length === 0 ? '<span class="text-secondary">Aucun cours assigné</span>' : ''}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Classes et étudiants -->
+            <div class="col-12">
+                <div class="p-3 bg-light rounded-3">
+                    <h6 class="fw-bold"><i class="bi bi-easel" style="color:var(--secondary);"></i> Classes et étudiants</h6>
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <strong>Classes :</strong>
+                            <div class="mt-1">
+                                ${classes.length === 0 ? '<span class="text-secondary">Aucune classe assignée</span>' :
+                                    classes.map(c => `
+                                        <span class="badge badge-custom bg-info-light me-1">${c.name} (${c.level})</span>
+                                    `).join('')
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Total étudiants :</strong>
+                            <div class="mt-1">
+                                <span class="badge badge-custom bg-success-light" style="font-size:1rem;padding:6px 14px;">
+                                    <i class="bi bi-people"></i> ${studentsCount} étudiants
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="col-12">
+                <div class="d-flex gap-2 justify-content-center">
+                    <button class="btn btn-outline-primary" onclick="showToast('Envoi de message à ${teacher.first_name}','info')">
+                        <i class="bi bi-envelope"></i> Envoyer un message
+                    </button>
+                    <button class="btn btn-outline-success" onclick="showToast('Appel à ${teacher.first_name}','info')">
+                        <i class="bi bi-telephone"></i> Appeler
+                    </button>
+                    <button class="btn btn-outline-warning" onclick="editTeacher(${teacher.id})">
+                        <i class="bi bi-pencil"></i> Modifier
+                    </button>
+                </div>
+            </div>
+        </div>
+    `, null);
+}
+
+// ===== MODIFIER UN ENSEIGNANT =====
+function editTeacher(id) {
+    if (userRole !== 'admin') {
+        showToast('Seul l\'administrateur peut modifier un enseignant', 'error');
+        return;
+    }
+    
+    const teacher = DB.teachers.find(t => t.id === id);
+    if (!teacher) return;
+    
+    const schools = userRole === 'admin' ? DB.schools : DB.schools.filter(s => s.id === userSchoolId);
+    
+    showModal(`✏️ Modifier ${teacher.first_name} ${teacher.last_name}`, `
+        <form id="editTeacherForm">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Matricule</label>
+                    <input type="text" class="form-control" id="editTeacherMatricule" value="${teacher.matricule || 'TCH-' + String(teacher.id).padStart(3, '0')}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Statut</label>
+                    <select class="form-select" id="editTeacherStatus">
+                        <option value="Actif" ${teacher.status === 'Actif' ? 'selected' : ''}>Actif</option>
+                        <option value="Inactif" ${teacher.status === 'Inactif' ? 'selected' : ''}>Inactif</option>
+                        <option value="En congé" ${teacher.status === 'En congé' ? 'selected' : ''}>En congé</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Nom</label>
+                    <input type="text" class="form-control" id="editTeacherLastName" value="${teacher.last_name}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Prénom</label>
+                    <input type="text" class="form-control" id="editTeacherFirstName" value="${teacher.first_name}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Cours (séparés par des virgules)</label>
+                    <input type="text" class="form-control" id="editTeacherSubject" value="${teacher.subject}" required>
+                    <small class="text-secondary">Ex: Mathématiques, Physique, Chimie</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">École</label>
+                    <select class="form-select" id="editTeacherSchool">
+                        ${schools.map(s => `<option value="${s.id}" ${s.id === teacher.school_id ? 'selected' : ''}>${s.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Email</label>
+                    <input type="email" class="form-control" id="editTeacherEmail" value="${teacher.email || ''}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Téléphone</label>
+                    <input type="text" class="form-control" id="editTeacherPhone" value="${teacher.phone || ''}">
+                </div>
+            </div>
+        </form>
+    `, () => {
+        const matricule = document.getElementById('editTeacherMatricule').value;
+        const lastName = document.getElementById('editTeacherLastName').value;
+        const firstName = document.getElementById('editTeacherFirstName').value;
+        const subject = document.getElementById('editTeacherSubject').value;
+        const schoolId = parseInt(document.getElementById('editTeacherSchool').value);
+        const email = document.getElementById('editTeacherEmail').value;
+        const phone = document.getElementById('editTeacherPhone').value;
+        const status = document.getElementById('editTeacherStatus').value;
+        
+        if (!lastName || !firstName || !subject) {
+            showToast('Veuillez remplir tous les champs', 'error');
+            return;
+        }
+
+        const school = DB.schools.find(s => s.id === schoolId);
+        teacher.matricule = matricule || teacher.matricule;
+        teacher.last_name = lastName;
+        teacher.first_name = firstName;
+        teacher.subject = subject;
+        teacher.school = school ? school.name : 'Non assigné';
+        teacher.school_id = schoolId;
+        teacher.email = email || 'Non renseigné';
+        teacher.phone = phone || 'Non renseigné';
+        teacher.status = status;
+        
+        closeModal();
+        showToast(`Enseignant ${firstName} ${lastName} modifié avec succès !`, 'success');
+        loadPageData('teachers');
+    });
+}
+
+// ===== SUPPRIMER UN ENSEIGNANT =====
+function deleteTeacher(id) {
+    if (userRole !== 'admin') {
+        showToast('Seul l\'administrateur peut supprimer un enseignant', 'error');
+        return;
+    }
+    
+    if (!confirm('Voulez-vous vraiment supprimer cet enseignant ?')) return;
+    const teacher = DB.teachers.find(t => t.id === id);
+    if (!teacher) return;
+    
+    // Vérifier si l'enseignant est assigné à des classes
+    const classes = DB.classes.filter(c => c.teacher_id === id);
+    if (classes.length > 0) {
+        if (!confirm(`Cet enseignant est assigné à ${classes.length} classe(s). Voulez-vous continuer ?`)) return;
+        classes.forEach(c => c.teacher_id = null);
+    }
+    
+    DB.teachers = DB.teachers.filter(t => t.id !== id);
+    showToast(`Enseignant ${teacher.first_name} ${teacher.last_name} supprimé avec succès !`, 'success');
+    loadPageData('teachers');
+}
+
+// ===== AJOUTER UN ENSEIGNANT =====
+function showTeacherForm() {
+    const schools = userRole === 'admin' ? DB.schools : DB.schools.filter(s => s.id === userSchoolId);
+    
+    showModal('Ajouter un enseignant', `
+        <form id="teacherForm">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Matricule</label>
+                    <input type="text" class="form-control" id="teacherMatricule" placeholder="TCH-001" value="TCH-${String(DB.teachers.length + 1).padStart(3, '0')}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Statut</label>
+                    <select class="form-select" id="teacherStatus">
+                        <option value="Actif">Actif</option>
+                        <option value="Inactif">Inactif</option>
+                        <option value="En conge">En conge</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Nom</label>
+                    <input type="text" class="form-control" id="teacherLastName" placeholder="Nom" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Prenom</label>
+                    <input type="text" class="form-control" id="teacherFirstName" placeholder="Prenom" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Cours enseignes</label>
+                    <input type="text" class="form-control" id="teacherSubject" placeholder="Ex: Mathematiques, Physique" required>
+                    <small class="text-secondary">Separez les cours par des virgules</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Ecole</label>
+                    <select class="form-select" id="teacherSchool">
+                        ${schools.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Email</label>
+                    <input type="email" class="form-control" id="teacherEmail" placeholder="email@exemple.com">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Telephone</label>
+                    <input type="text" class="form-control" id="teacherPhone" placeholder="77 123 45 67">
+                </div>
+            </div>
+        </form>
+    `, () => {
+        const matricule = document.getElementById('teacherMatricule').value;
+        const lastName = document.getElementById('teacherLastName').value;
+        const firstName = document.getElementById('teacherFirstName').value;
+        const subject = document.getElementById('teacherSubject').value;
+        const schoolId = parseInt(document.getElementById('teacherSchool').value);
+        const email = document.getElementById('teacherEmail').value;
+        const phone = document.getElementById('teacherPhone').value;
+        const status = document.getElementById('teacherStatus').value;
+        
+        if (!lastName || !firstName || !subject) {
+            showToast('Veuillez remplir tous les champs obligatoires', 'error');
+            return;
+        }
+        
+        const school = DB.schools.find(s => s.id === schoolId);
+        const newTeacher = {
+            id: DB.teachers.length + 1,
+            matricule: matricule || `TCH-${String(DB.teachers.length + 1).padStart(3, '0')}`,
+            first_name: firstName,
+            last_name: lastName,
+            subject: subject,
+            school: school ? school.name : 'Non assigne',
+            school_id: schoolId,
+            email: email || 'Non renseigne',
+            phone: phone || 'Non renseigne',
+            status: status || 'Actif'
+        };
+        
+        DB.teachers.push(newTeacher);
+        
+        NotificationSystem.send(`school_${schoolId}`, 
+            `<strong>${firstName} ${lastName}</strong> a rejoint l'equipe enseignante en ${subject}`,
+            'success'
+        );
+        
+        NotificationSystem.send('admin', 
+            `<strong>${firstName} ${lastName}</strong> a ete ajoute comme enseignant en ${subject} dans ${school ? school.name : 'une ecole'}`,
+            'info'
+        );
+        
+        SyncSystem.sync();
+        
+        closeModal();
+        showToast(`Enseignant ${firstName} ${lastName} ajoute avec succès !`, 'success');
+        loadPageData('teachers');
+        loadPageData('dashboard');
+    });
+}
+
+
+// ============================================================
+// ENVOI DE MESSAGE À UN ENSEIGNANT DEPUIS LE DÉTAIL
+// ============================================================
+
+function sendMessageToTeacher(teacherId) {
+    const teacher = DB.teachers.find(t => t.id === teacherId);
+    if (!teacher) {
+        showToast('Enseignant non trouvé', 'error');
+        return;
+    }
+
+    // Récupérer les parents et autres enseignants pour le destinataire
+    const recipients = [
+        { id: 'all', name: 'Tous' },
+        { id: 'parents', name: 'Tous les parents' },
+        { id: 'teachers', name: 'Tous les enseignants' },
+        ...DB.parentAccounts.map(p => ({ id: `parent_${p.id}`, name: `Parent: ${p.name}` })),
+        ...DB.teachers.filter(t => t.id !== teacherId).map(t => ({ id: `teacher_${t.id}`, name: `Enseignant: ${t.first_name} ${t.last_name}` }))
+    ];
+
+    // Récupérer les classes de l'enseignant
+    const teacherClasses = DB.classes.filter(c => c.teacher_id === teacherId);
+    const classNames = teacherClasses.map(c => c.name);
+    const students = DB.students.filter(s => classNames.includes(s.class) && s.school_id === teacher.school_id);
+    const studentIds = students.map(s => s.id);
+    
+    // Récupérer les parents des étudiants
+    const parentIds = [];
+    students.forEach(s => {
+        if (s.parent_id) {
+            const parent = DB.parentAccounts.find(p => p.id === s.parent_id);
+            if (parent && !parentIds.includes(parent.id)) {
+                parentIds.push(parent.id);
+            }
+        }
+    });
+
+    showModal(`✉️ Envoyer un message à ${teacher.first_name} ${teacher.last_name}`, `
+        <div class="mb-3">
+            <div class="p-3 bg-light rounded-3 mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,${getTeacherColor(teacher.id)},#7C3AED);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:1.2rem;">
+                        ${teacher.first_name.charAt(0)}${teacher.last_name.charAt(0)}
+                    </div>
+                    <div>
+                        <h6 class="mb-0">${teacher.first_name} ${teacher.last_name}</h6>
+                        <small class="text-secondary">${teacher.subject} • ${teacher.school}</small>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="messageToTeacherForm">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Destinataire</label>
+                    <select class="form-select" id="messageRecipient">
+                        <option value="teacher_${teacher.id}" selected>👨‍🏫 ${teacher.first_name} ${teacher.last_name}</option>
+                        ${parentIds.length > 0 ? `
+                            <optgroup label="👨‍👩‍👧 Parents des étudiants">
+                                ${parentIds.map(id => {
+                                    const parent = DB.parentAccounts.find(p => p.id === id);
+                                    return parent ? `<option value="parent_${id}">👤 ${parent.name}</option>` : '';
+                                }).join('')}
+                            </optgroup>
+                            <option value="all_parents">👨‍👩‍👧 Tous les parents</option>
+                        ` : ''}
+                        ${teacherClasses.length > 0 ? `
+                            <optgroup label="📚 Classes">
+                                ${teacherClasses.map(c => `<option value="class_${c.id}">📚 ${c.name} (${c.level || 'N/A'})</option>`).join('')}
+                            </optgroup>
+                        ` : ''}
+                        <option value="admin">👤 Administration</option>
+                        <option value="all">🌐 Tous</option>
+                    </select>
+                    <small class="text-secondary">Sélectionnez le destinataire du message</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Sujet</label>
+                    <input type="text" class="form-control" id="messageSubject" 
+                           placeholder="Sujet du message" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Message</label>
+                    <textarea class="form-control" id="messageContent" rows="5" 
+                              placeholder="Écrivez votre message..." required></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Type de message</label>
+                    <select class="form-select" id="messageType">
+                        <option value="info">ℹ️ Information</option>
+                        <option value="important">⚠️ Important</option>
+                        <option value="urgent">🔴 Urgent</option>
+                        <option value="confidential">🔒 Confidentiel</option>
+                    </select>
+                </div>
+                
+                <div class="alert alert-info small">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Note :</strong> Le message sera envoyé et notifié au(x) destinataire(s) sélectionné(s).
+                </div>
+            </form>
+        </div>
+    `, () => {
+        // Récupérer les valeurs du formulaire
+        const recipient = document.getElementById('messageRecipient').value;
+        const subject = document.getElementById('messageSubject').value;
+        const content = document.getElementById('messageContent').value;
+        const type = document.getElementById('messageType').value;
+        
+        if (!subject || !content) {
+            showToast('Veuillez remplir tous les champs', 'error');
+            return;
+        }
+
+        // Envoyer le message en fonction du destinataire
+        let recipientName = '';
+        let sentCount = 0;
+        let recipientList = [];
+
+        if (recipient === `teacher_${teacher.id}`) {
+            // Message à l'enseignant lui-même
+            recipientName = `${teacher.first_name} ${teacher.last_name}`;
+            addMessageToDB('admin', `Enseignant: ${teacher.first_name} ${teacher.last_name}`, subject, content, teacher.id);
+            sendNotification(teacher.id, content, type);
+            sentCount = 1;
+            recipientList = [teacher.first_name];
+            
+        } else if (recipient.startsWith('parent_')) {
+            // Message à un parent spécifique
+            const parentId = parseInt(recipient.split('_')[1]);
+            const parent = DB.parentAccounts.find(p => p.id === parentId);
+            if (parent) {
+                recipientName = parent.name;
+                addMessageToDB('admin', `Parent: ${parent.name}`, subject, content, parentId);
+                sendNotification(parentId, content, type);
+                sentCount = 1;
+                recipientList = [parent.name];
+            }
+            
+        } else if (recipient === 'all_parents') {
+            // Message à tous les parents des étudiants de l'enseignant
+            const uniqueParents = [];
+            students.forEach(s => {
+                if (s.parent_id) {
+                    const parent = DB.parentAccounts.find(p => p.id === s.parent_id);
+                    if (parent && !uniqueParents.find(p => p.id === parent.id)) {
+                        uniqueParents.push(parent);
+                    }
+                }
+            });
+            
+            uniqueParents.forEach(p => {
+                addMessageToDB('admin', `Parent: ${p.name}`, subject, content, p.id);
+                sendNotification(p.id, content, type);
+                sentCount++;
+                recipientList.push(p.name);
+            });
+            recipientName = `${uniqueParents.length} parent(s)`;
+            
+        } else if (recipient.startsWith('class_')) {
+            // Message à une classe spécifique
+            const classId = parseInt(recipient.split('_')[1]);
+            const classData = DB.classes.find(c => c.id === classId);
+            if (classData) {
+                const classStudents = DB.students.filter(s => s.class === classData.name && s.school_id === classData.school_id);
+                const classParents = [];
+                classStudents.forEach(s => {
+                    if (s.parent_id) {
+                        const parent = DB.parentAccounts.find(p => p.id === s.parent_id);
+                        if (parent && !classParents.find(p => p.id === parent.id)) {
+                            classParents.push(parent);
+                        }
+                    }
+                });
+                
+                classParents.forEach(p => {
+                    addMessageToDB('admin', `Parent: ${p.name}`, subject, content, p.id);
+                    sendNotification(p.id, content, type);
+                    sentCount++;
+                    recipientList.push(p.name);
+                });
+                
+                // Envoyer aussi à l'enseignant de la classe
+                if (classData.teacher_id) {
+                    const classTeacher = DB.teachers.find(t => t.id === classData.teacher_id);
+                    if (classTeacher) {
+                        addMessageToDB('admin', `Enseignant: ${classTeacher.first_name} ${classTeacher.last_name}`, subject, content, classTeacher.id);
+                        sendNotification(classTeacher.id, content, type);
+                        sentCount++;
+                        recipientList.push(classTeacher.first_name);
+                    }
+                }
+                
+                recipientName = `Classe ${classData.name} (${classParents.length} parents)`;
+            }
+            
+        } else if (recipient === 'admin') {
+            // Message à l'administration
+            recipientName = 'Administration';
+            addMessageToDB('admin', 'Administration', subject, content, 0);
+            sendNotification('admin', content, type);
+            sentCount = 1;
+            recipientList = ['Administration'];
+            
+        } else if (recipient === 'all') {
+            // Message à tous
+            recipientName = 'Tous';
+            // Enseignant
+            addMessageToDB('admin', `Enseignant: ${teacher.first_name} ${teacher.last_name}`, subject, content, teacher.id);
+            sendNotification(teacher.id, content, type);
+            sentCount++;
+            recipientList.push(teacher.first_name);
+            
+            // Parents des étudiants
+            const uniqueParents = [];
+            students.forEach(s => {
+                if (s.parent_id) {
+                    const parent = DB.parentAccounts.find(p => p.id === s.parent_id);
+                    if (parent && !uniqueParents.find(p => p.id === parent.id)) {
+                        uniqueParents.push(parent);
+                    }
+                }
+            });
+            uniqueParents.forEach(p => {
+                addMessageToDB('admin', `Parent: ${p.name}`, subject, content, p.id);
+                sendNotification(p.id, content, type);
+                sentCount++;
+                recipientList.push(p.name);
+            });
+            
+            // Administration
+            addMessageToDB('admin', 'Administration', subject, content, 0);
+            sendNotification('admin', content, type);
+            sentCount++;
+            recipientList.push('Administration');
+        }
+
+        // Ajouter le message dans la base de données pour l'enseignant
+        const messageEntry = {
+            id: DB.messages.length + 1,
+            sender: 'Administration',
+            sender_id: 0,
+            receiver: `${teacher.first_name} ${teacher.last_name}`,
+            receiver_id: teacher.id,
+            subject: subject,
+            content: content,
+            date: new Date().toISOString().split('T')[0],
+            read: false,
+            type: type
+        };
+        DB.messages.push(messageEntry);
+
+        // Notification de succès
+        closeModal();
+        
+        const typeLabels = {
+            info: 'ℹ️ Information',
+            important: '⚠️ Important',
+            urgent: '🔴 Urgent',
+            confidential: '🔒 Confidentiel'
+        };
+        
+        showToast(`✅ Message "${typeLabels[type] || 'Info'}" envoyé à ${recipientName} (${sentCount} destinataire(s))`, 'success');
+        
+        // Si c'était un message à l'enseignant lui-même, notification spécifique
+        if (recipient === `teacher_${teacher.id}`) {
+            showToast(`📩 Le message a été envoyé à ${teacher.first_name} ${teacher.last_name}`, 'success');
+        }
+        
+        // Mettre à jour l'interface
+        loadPageData('messages');
+        loadPageData('dashboard');
+        
+        // Ajouter une notification pour le destinataire principal
+        if (recipient === `teacher_${teacher.id}`) {
+            NotificationSystem.send(teacher.id, 
+                `<strong>Nouveau message</strong> de l'administration : ${subject}`,
+                type
+            );
+        }
+    });
+}
+
+// ============================================================
+// FONCTIONS AIDES POUR L'ENVOI DE MESSAGES
+// ============================================================
+
+function addMessageToDB(sender, receiver, subject, content, receiverId) {
+    DB.messages.push({
+        id: DB.messages.length + 1,
+        sender: sender,
+        sender_id: 0,
+        receiver: receiver,
+        receiver_id: receiverId,
+        subject: subject,
+        content: content,
+        date: new Date().toISOString().split('T')[0],
+        read: false
+    });
+}
+
+function sendNotification(userId, content, type = 'info') {
+    const notification = {
+        id: DB.notifications.length + 1,
+        text: content.length > 100 ? content.substring(0, 100) + '...' : content,
+        time: 'À l\'instant',
+        read: false,
+        user_id: userId,
+        type: type
+    };
+    DB.notifications.push(notification);
+    EventSystem.emit('notification', notification);
+}
+
+// ============================================================
+// ENVOI DE MESSAGE RAPIDE DEPUIS LE TABLEAU DES ENSEIGNANTS
+// ============================================================
+
+function quickMessageToTeacher(teacherId) {
+    const teacher = DB.teachers.find(t => t.id === teacherId);
+    if (!teacher) return;
+    
+    // Ouvrir directement la boîte de dialogue d'envoi de message
+    sendMessageToTeacher(teacherId);
+}
+/// ============================================================
+// 14. CLASSES - GESTION PAR ÉCOLE
+// ============================================================
+
+function loadClasses(filterFn) {
+    const container = document.getElementById('classesList');
+    
+    // Filtrer les classes selon le rôle
+    let classes = DB.classes;
+    
+    if (userRole === 'school') {
+        // Une école ne voit que ses propres classes
+        classes = classes.filter(c => c.school_id === userSchoolId);
+    } else if (userRole === 'teacher') {
+        // Un enseignant voit les classes où il enseigne
+        const teacher = DB.teachers.find(t => t.id === currentUser?.id || 0);
+        if (teacher) {
+            classes = classes.filter(c => c.teacher_id === teacher.id);
+        }
+    } else if (userRole === 'parent') {
+        // Un parent voit les classes de ses enfants
+        const childIds = currentUser?.children_ids || [];
+        const children = DB.students.filter(s => childIds.includes(s.id));
+        const classNames = children.map(c => c.class);
+        classes = classes.filter(c => classNames.includes(c.name));
+    }
+    // Admin voit toutes les classes
+    
+    if (classes.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-secondary py-4">
+                <i class="bi bi-easel" style="font-size:2rem;display:block;margin-bottom:10px;"></i>
+                ${userRole === 'school' ? 'Aucune classe dans votre école' : 
+                  userRole === 'teacher' ? 'Aucune classe assignée' :
+                  userRole === 'parent' ? 'Aucune classe pour vos enfants' :
+                  'Aucune classe enregistrée'}
+                ${userRole === 'school' ? '<br><button class="btn btn-primary btn-sm mt-2" onclick="showClassForm()"><i class="bi bi-plus-lg"></i> Créer une classe</button>' : ''}
+            </div>
+        `;
+        return;
+    }
+    
+    // Grouper par école pour un meilleur affichage
+    const groupedClasses = {};
+    classes.forEach(c => {
+        const schoolName = c.school_name || DB.schools.find(s => s.id === c.school_id)?.name || 'École non définie';
+        if (!groupedClasses[schoolName]) {
+            groupedClasses[schoolName] = [];
+        }
+        groupedClasses[schoolName].push(c);
+    });
+    
+    let html = '';
+    for (const [schoolName, schoolClasses] of Object.entries(groupedClasses)) {
+        html += `
+            <div class="mb-4">
+                <h6 class="fw-bold text-secondary mb-2">
+                    <i class="bi bi-building" style="color:var(--primary);"></i> ${schoolName}
+                    <span class="badge badge-custom bg-primary-light ms-2">${schoolClasses.length} classe(s)</span>
+                </h6>
+                <div class="row">
+                    ${schoolClasses.map(c => {
+                        const teacher = DB.teachers.find(t => t.id === c.teacher_id);
+                        const students = DB.students.filter(s => s.class === c.name && s.school_id === c.school_id);
+                        const studentsCount = students.length;
+                        const pendingPayments = DB.payments
+                            .filter(p => p.student_id && students.some(s => s.id === p.student_id) && p.status === 'pending')
+                            .length;
+                        
+                        return `
+                            <div class="col-md-4 col-lg-3">
+                                <div class="p-3 border rounded-3 mb-3 class-card" style="transition:all 0.3s;cursor:pointer;" onclick="viewClass(${c.id})">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong class="fs-5">${c.name}</strong>
+                                            <div class="text-secondary small">${c.level || ''}</div>
+                                        </div>
+                                        <span class="badge badge-custom bg-primary-light">${studentsCount} élèves</span>
+                                    </div>
+                                    <div class="mt-2 text-secondary small">
+                                        <div><i class="bi bi-person-video3 me-1"></i> ${teacher ? `${teacher.first_name} ${teacher.last_name}` : 'Non assigné'}</div>
+                                        <div><i class="bi bi-credit-card me-1"></i> ${pendingPayments} paiement(s) en attente</div>
+                                    </div>
+                                    <hr class="my-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="small text-secondary">
+                                            <i class="bi bi-people"></i> ${studentsCount} élèves
+                                        </span>
+                                        <div>
+                                            ${userRole === 'school' || userRole === 'admin' ? `
+                                                <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation();viewClass(${c.id})"><i class="bi bi-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-warning" onclick="event.stopPropagation();editClass(${c.id})"><i class="bi bi-pencil"></i></button>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation();deleteClass(${c.id})"><i class="bi bi-trash"></i></button>
+                                            ` : userRole === 'parent' ? `
+                                                <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation();viewClass(${c.id})"><i class="bi bi-eye"></i></button>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html;
+}
+
+// ===== VOIR LES DÉTAILS D'UNE CLASSE =====
+function viewClass(id) {
+    const classData = DB.classes.find(c => c.id === id);
+    if (!classData) {
+        showToast('Classe non trouvée', 'error');
+        return;
+    }
+
+    const teacher = DB.teachers.find(t => t.id === classData.teacher_id);
+    const school = DB.schools.find(s => s.id === classData.school_id);
+    const students = DB.students.filter(s => s.class === classData.name && s.school_id === classData.school_id);
+    const payments = DB.payments.filter(p => students.some(s => s.id === p.student_id));
+    const totalRevenue = payments
+        .filter(p => p.status === 'completed')
+        .reduce((sum, p) => sum + p.amount, 0);
+    const pendingPayments = payments.filter(p => p.status === 'pending').length;
+
+    showModal(`📚 ${classData.name} - Détails`, `
+        <div class="row g-3">
+            <!-- Informations générales -->
+            <div class="col-md-12">
+                <div class="p-3 bg-light rounded-3">
+                    <h6 class="fw-bold"><i class="bi bi-info-circle" style="color:var(--info);"></i> Informations générales</h6>
+                    <div class="row mt-2">
+                        <div class="col-md-4"><strong>Nom :</strong> ${classData.name}</div>
+                        <div class="col-md-4"><strong>Niveau :</strong> ${classData.level || 'Non spécifié'}</div>
+                        <div class="col-md-4"><strong>École :</strong> ${school ? school.name : 'Non définie'}</div>
+                        <div class="col-md-6"><strong>Enseignant principal :</strong> ${teacher ? `${teacher.first_name} ${teacher.last_name}` : 'Non assigné'}</div>
+                        <div class="col-md-6"><strong>Nombre d'élèves :</strong> ${students.length}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="col-md-12">
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <div class="p-2 text-center border rounded-3">
+                            <div class="fs-4 fw-bold" style="color:var(--primary);">${students.length}</div>
+                            <div class="small text-secondary">Élèves</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-2 text-center border rounded-3">
+                            <div class="fs-4 fw-bold" style="color:var(--success);">${payments.length}</div>
+                            <div class="small text-secondary">Paiements</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-2 text-center border rounded-3">
+                            <div class="fs-4 fw-bold" style="color:var(--warning);">${pendingPayments}</div>
+                            <div class="small text-secondary">En attente</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-2 text-center border rounded-3">
+                            <div class="fs-4 fw-bold" style="color:var(--success);">${totalRevenue.toLocaleString()} FCFA</div>
+                            <div class="small text-secondary">Total payé</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des élèves -->
+            <div class="col-md-12">
+                <h6><i class="bi bi-people" style="color:var(--primary);"></i> Élèves de la classe</h6>
+                ${students.length === 0 ? '<p class="text-secondary small">Aucun élève dans cette classe</p>' :
+                    `<div class="table-responsive">
+                        <table class="table table-sm table-edugest">
+                            <thead>
+                                <tr><th>Matricule</th><th>Nom</th><th>Prénom</th><th>Statut</th><th>Paiements</th></tr>
+                            </thead>
+                            <tbody>
+                                ${students.map(s => {
+                                    const studentPayments = DB.payments.filter(p => p.student_id === s.id);
+                                    const paid = studentPayments.filter(p => p.status === 'completed').length;
+                                    const total = studentPayments.length;
+                                    return `
+                                        <tr>
+                                            <td>${s.matricule}</td>
+                                            <td>${s.last_name}</td>
+                                            <td>${s.first_name}</td>
+                                            <td><span class="badge badge-custom ${s.status === 'Actif' ? 'bg-success-light' : 'bg-warning-light'}">${s.status}</span></td>
+                                            <td>${paid}/${total}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>`
+                }
+            </div>
+
+            <!-- Paiements récents -->
+            <div class="col-md-12">
+                <h6><i class="bi bi-credit-card" style="color:var(--success);"></i> Paiements récents</h6>
+                ${payments.length === 0 ? '<p class="text-secondary small">Aucun paiement</p>' :
+                    `<div class="table-responsive">
+                        <table class="table table-sm table-edugest">
+                            <thead>
+                                <tr><th>Facture</th><th>Élève</th><th>Montant</th><th>Statut</th><th>Date</th></tr>
+                            </thead>
+                            <tbody>
+                                ${payments.slice(0, 10).map(p => `
+                                    <tr>
+                                        <td>${p.invoice}</td>
+                                        <td>${p.student}</td>
+                                        <td><strong>${p.amount.toLocaleString()} FCFA</strong></td>
+                                        <td><span class="badge badge-custom ${p.status === 'completed' ? 'bg-success-light' : 'bg-warning-light'}">${p.status === 'completed' ? 'Payé' : 'En attente'}</span></td>
+                                        <td>${p.date}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>`
+                }
+            </div>
+
+            <!-- Actions -->
+            <div class="col-md-12">
+                <div class="d-flex gap-2 flex-wrap">
+                    ${userRole === 'school' || userRole === 'admin' ? `
+                        <button class="btn btn-primary btn-sm" onclick="editClass(${classData.id})"><i class="bi bi-pencil"></i> Modifier</button>
+                        <button class="btn btn-success btn-sm" onclick="showToast('Ajout d\'élèves à la classe','info')"><i class="bi bi-person-plus"></i> Ajouter des élèves</button>
+                        <button class="btn btn-warning btn-sm" onclick="showToast('Génération du rapport de classe','info')"><i class="bi bi-file-earmark-text"></i> Rapport</button>
+                    ` : ''}
+                    ${userRole === 'parent' ? `
+                        <button class="btn btn-info btn-sm" onclick="showToast('Contacter l\'enseignant','info')"><i class="bi bi-envelope"></i> Contacter l'enseignant</button>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `, null);
+}
+
+// ===== CRÉER UNE CLASSE (ÉCOLE UNIQUEMENT) =====
+function showClassForm() {
+    if (userRole !== 'school' && userRole !== 'admin') {
+        showToast('Seul une ecole ou l\'administrateur peut creer une classe', 'error');
+        return;
+    }
+    
+    const schools = userRole === 'admin' ? DB.schools : DB.schools.filter(s => s.id === userSchoolId);
+    const teachers = userRole === 'admin' ? DB.teachers : DB.teachers.filter(t => t.school_id === userSchoolId);
+    
+    showModal('Creer une nouvelle classe', `
+        <form id="classForm">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Nom de la classe</label>
+                    <input type="text" class="form-control" id="className" placeholder="Ex: Terminale A" required>
+                    <small class="text-secondary">Ex: 6eme A, 5eme B, Terminale C...</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Niveau</label>
+                    <select class="form-select" id="classLevel">
+                        <option value="">Selectionner un niveau</option>
+                        <option value="Maternelle">Maternelle</option>
+                        <option value="CP">CP</option>
+                        <option value="CE1">CE1</option>
+                        <option value="CE2">CE2</option>
+                        <option value="CM1">CM1</option>
+                        <option value="CM2">CM2</option>
+                        <option value="6eme">6eme</option>
+                        <option value="5eme">5eme</option>
+                        <option value="4eme">4eme</option>
+                        <option value="3eme">3eme</option>
+                        <option value="Seconde">Seconde</option>
+                        <option value="Premiere">Premiere</option>
+                        <option value="Terminale">Terminale</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Ecole</label>
+                    <select class="form-select" id="classSchool">
+                        ${schools.map(s => `<option value="${s.id}" ${s.id === userSchoolId ? 'selected' : ''}>${s.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Enseignant principal</label>
+                    <select class="form-select" id="classTeacher">
+                        <option value="">Non assigne</option>
+                        ${teachers.map(t => `<option value="${t.id}">${t.first_name} ${t.last_name} (${t.subject})</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Capacite maximale</label>
+                    <input type="number" class="form-control" id="classCapacity" placeholder="Ex: 30" value="30">
+                </div>
+            </div>
+        </form>
+    `, () => {
+        const name = document.getElementById('className').value;
+        const level = document.getElementById('classLevel').value;
+        const schoolId = parseInt(document.getElementById('classSchool').value);
+        const teacherId = parseInt(document.getElementById('classTeacher').value) || null;
+        const capacity = parseInt(document.getElementById('classCapacity').value) || 30;
+        
+        if (!name || !level) {
+            showToast('Veuillez remplir tous les champs obligatoires', 'error');
+            return;
+        }
+
+        const existingClass = DB.classes.find(c => c.name === name && c.school_id === schoolId);
+        if (existingClass) {
+            showToast(`Une classe "${name}" existe deja dans cette ecole`, 'error');
+            return;
+        }
+
+        const school = DB.schools.find(s => s.id === schoolId);
+        const newClass = {
+            id: DB.classes.length + 1,
+            name: name,
+            level: level,
+            school_id: schoolId,
+            school_name: school ? school.name : 'Non definie',
+            teacher_id: teacherId,
+            capacity: capacity,
+            created_at: new Date().toISOString().split('T')[0],
+            status: 'Actif'
+        };
+        
+        DB.classes.push(newClass);
+        
+        NotificationSystem.send(`school_${schoolId}`, 
+            `<strong>${name}</strong> a ete creee avec succès`,
+            'success'
+        );
+        
+        if (teacherId) {
+            const teacher = DB.teachers.find(t => t.id === teacherId);
+            if (teacher) {
+                NotificationSystem.send(teacher.id, 
+                    `Vous avez ete assigne comme enseignant principal de la classe <strong>${name}</strong>`,
+                    'info'
+                );
+            }
+        }
+        
+        NotificationSystem.send('admin', 
+            `<strong>${name}</strong> a ete creee dans ${school ? school.name : 'une ecole'}`,
+            'info'
+        );
+        
+        SyncSystem.sync();
+        
+        closeModal();
+        showToast(`Classe ${name} creee avec succès !`, 'success');
+        loadPageData('classes');
+        loadPageData('dashboard');
+    });
+}
+
+// ===== MODIFIER UNE CLASSE =====
+function editClass(id) {
+    if (userRole !== 'school' && userRole !== 'admin') {
+        showToast('Seul une école ou l\'administrateur peut modifier une classe', 'error');
+        return;
+    }
+    
+    const classData = DB.classes.find(c => c.id === id);
+    if (!classData) return;
+    
+    // Vérifier que l'école a le droit de modifier
+    if (userRole === 'school' && classData.school_id !== userSchoolId) {
+        showToast('Vous ne pouvez pas modifier une classe d\'une autre école', 'error');
+        return;
+    }
+    
+    const schools = userRole === 'admin' ? DB.schools : DB.schools.filter(s => s.id === userSchoolId);
+    const teachers = DB.teachers.filter(t => t.school_id === classData.school_id);
+    
+    showModal(`✏️ Modifier ${classData.name}`, `
+        <form id="editClassForm">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Nom de la classe</label>
+                    <input type="text" class="form-control" id="editClassName" value="${classData.name}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Niveau</label>
+                    <select class="form-select" id="editClassLevel">
+                        <option value="Maternelle" ${classData.level === 'Maternelle' ? 'selected' : ''}>Maternelle</option>
+                        <option value="CP" ${classData.level === 'CP' ? 'selected' : ''}>CP</option>
+                        <option value="CE1" ${classData.level === 'CE1' ? 'selected' : ''}>CE1</option>
+                        <option value="CE2" ${classData.level === 'CE2' ? 'selected' : ''}>CE2</option>
+                        <option value="CM1" ${classData.level === 'CM1' ? 'selected' : ''}>CM1</option>
+                        <option value="CM2" ${classData.level === 'CM2' ? 'selected' : ''}>CM2</option>
+                        <option value="6ème" ${classData.level === '6ème' ? 'selected' : ''}>6ème</option>
+                        <option value="5ème" ${classData.level === '5ème' ? 'selected' : ''}>5ème</option>
+                        <option value="4ème" ${classData.level === '4ème' ? 'selected' : ''}>4ème</option>
+                        <option value="3ème" ${classData.level === '3ème' ? 'selected' : ''}>3ème</option>
+                        <option value="Seconde" ${classData.level === 'Seconde' ? 'selected' : ''}>Seconde</option>
+                        <option value="Première" ${classData.level === 'Première' ? 'selected' : ''}>Première</option>
+                        <option value="Terminale" ${classData.level === 'Terminale' ? 'selected' : ''}>Terminale</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">École</label>
+                    <select class="form-select" id="editClassSchool" ${userRole === 'school' ? 'disabled' : ''}>
+                        ${schools.map(s => `<option value="${s.id}" ${s.id === classData.school_id ? 'selected' : ''}>${s.name}</option>`).join('')}
+                    </select>
+                    ${userRole === 'school' ? '<small class="text-secondary">Vous ne pouvez pas changer l\'école</small>' : ''}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Enseignant principal</label>
+                    <select class="form-select" id="editClassTeacher">
+                        <option value="">Non assigné</option>
+                        ${teachers.map(t => `<option value="${t.id}" ${t.id === classData.teacher_id ? 'selected' : ''}>${t.first_name} ${t.last_name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Capacité</label>
+                    <input type="number" class="form-control" id="editClassCapacity" value="${classData.capacity || 30}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Statut</label>
+                    <select class="form-select" id="editClassStatus">
+                        <option value="Actif" ${classData.status === 'Actif' ? 'selected' : ''}>Actif</option>
+                        <option value="Inactif" ${classData.status === 'Inactif' ? 'selected' : ''}>Inactif</option>
+                        <option value="Fermée" ${classData.status === 'Fermée' ? 'selected' : ''}>Fermée</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+    `, () => {
+        const name = document.getElementById('editClassName').value;
+        const level = document.getElementById('editClassLevel').value;
+        const teacherId = parseInt(document.getElementById('editClassTeacher').value) || null;
+        const capacity = parseInt(document.getElementById('editClassCapacity').value) || 30;
+        const status = document.getElementById('editClassStatus').value;
+        
+        if (!name || !level) {
+            showToast('Veuillez remplir tous les champs', 'error');
+            return;
+        }
+
+        classData.name = name;
+        classData.level = level;
+        classData.teacher_id = teacherId;
+        classData.capacity = capacity;
+        classData.status = status;
+        
+        if (userRole === 'admin') {
+            const schoolId = parseInt(document.getElementById('editClassSchool').value);
+            const school = DB.schools.find(s => s.id === schoolId);
+            classData.school_id = schoolId;
+            classData.school_name = school ? school.name : 'Non définie';
+        }
+        
+        closeModal();
+        showToast(`Classe ${name} modifiée avec succès !`, 'success');
+        loadPageData('classes');
+        loadPageData('dashboard');
+    });
+}
+
+// ===== SUPPRIMER UNE CLASSE =====
+function deleteClass(id) {
+    if (userRole !== 'school' && userRole !== 'admin') {
+        showToast('Seul une école ou l\'administrateur peut supprimer une classe', 'error');
+        return;
+    }
+    
+    const classData = DB.classes.find(c => c.id === id);
+    if (!classData) return;
+    
+    // Vérifier que l'école a le droit de supprimer
+    if (userRole === 'school' && classData.school_id !== userSchoolId) {
+        showToast('Vous ne pouvez pas supprimer une classe d\'une autre école', 'error');
+        return;
+    }
+    
+    // Vérifier s'il y a des étudiants dans cette classe
+    const students = DB.students.filter(s => s.class === classData.name && s.school_id === classData.school_id);
+    if (students.length > 0) {
+        if (!confirm(`⚠️ Cette classe contient ${students.length} étudiant(s). Voulez-vous vraiment la supprimer ?`)) return;
+        // Option: réassigner les étudiants
+        if (confirm('Voulez-vous réassigner les étudiants à une autre classe ?')) {
+            showToast('Fonctionnalité de réassignation à venir', 'info');
+        }
+    }
+    
+    if (!confirm(`Voulez-vous vraiment supprimer la classe ${classData.name} ?`)) return;
+    
+    DB.classes = DB.classes.filter(c => c.id !== id);
+    showToast(`Classe ${classData.name} supprimée avec succès !`, 'success');
+    loadPageData('classes');
+    loadPageData('dashboard');
+}
+// ============================================================
+// 15. RAPPORTS - GÉNÉRATION PDF STYLE CONGOLAIS
+// ============================================================
+
+// Charger jsPDF et autoTable
+// Ajouter dans index.html avant le script app.js :
+// <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+// <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+function generateReport(type) {
+    const container = document.getElementById('reportResult');
+    
+    // Afficher un indicateur de chargement
+    container.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+            </div>
+            <p class="mt-2">Génération du rapport en cours...</p>
+        </div>
+    `;
+    
+    // Générer le rapport avec un léger délai pour l'effet visuel
+    setTimeout(() => {
+        switch(type) {
+            case 'students': generateStudentsReport(); break;
+            case 'payments': generatePaymentsReport(); break;
+            case 'schools': generateSchoolsReport(); break;
+            case 'parents': generateParentsReport(); break;
+            case 'classes': generateClassesReport(); break;
+            case 'teacher': generateTeacherReport(); break;
+            default: showToast('Type de rapport non reconnu', 'error');
+        }
+    }, 500);
+}
+
+// ============================================================
+// 15.1 RAPPORT DES ÉTUDIANTS
+// ============================================================
+
+function generateStudentsReport() {
+    const students = userRole === 'school' ? 
+        DB.students.filter(s => s.school_id === userSchoolId) : 
+        DB.students;
+    
+    const schoolName = userRole === 'school' ? 
+        DB.schools.find(s => s.id === userSchoolId)?.name || 'Mon Ecole' : 
+        'REPUBLIQUE DEMOCRATIQUE DU CONGO';
+    
+    const doc = createPDFDocument('RAPPORT DES ETUDIANTS', schoolName);
+    
+    // Statistiques
+    const totalStudents = students.length;
+    const activeStudents = students.filter(s => s.status === 'Actif').length;
+    const inactiveStudents = students.filter(s => s.status === 'Inactif').length;
+    const schoolsCount = [...new Set(students.map(s => s.school))].length;
+    
+    // Ajouter les statistiques
+    doc.setFontSize(11);
+    doc.text(`Total des etudiants : ${totalStudents}`, 14, 35);
+    doc.text(`Etudiants actifs : ${activeStudents}`, 14, 42);
+    doc.text(`Etudiants inactifs : ${inactiveStudents}`, 14, 49);
+    doc.text(`Nombre d'ecoles : ${schoolsCount}`, 14, 56);
+    
+    // Tableau des étudiants
+    const tableData = students.map(s => [
+        s.matricule || 'N/A',
+        s.last_name || '',
+        s.first_name || '',
+        s.class || 'N/A',
+        s.school || 'N/A',
+        s.status || 'N/A'
+    ]);
+    
+    doc.autoTable({
+        startY: 63,
+        head: [['Matricule', 'Nom', 'Prenom', 'Classe', 'Ecole', 'Statut']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: {
+            fillColor: [79, 70, 229],
+            textColor: [255, 255, 255],
+            fontSize: 10,
+            fontStyle: 'bold'
+        },
+        bodyStyles: {
+            fontSize: 9
+        },
+        alternateRowStyles: {
+            fillColor: [245, 247, 250]
+        },
+        margin: { left: 14, right: 14 },
+        pageBreak: 'auto'
+    });
+    
+    // Ajouter le pied de page
+    addFooter(doc, 'Rapport genere le ' + new Date().toLocaleDateString('fr-FR'));
+    
+    // Sauvegarder le PDF
+    const filename = `rapport_etudiants_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(filename);
+    
+    // Afficher dans l'interface
+    showReportResult('students', students.length, filename);
+    showToast('Rapport PDF genere avec succes', 'success');
+}
+
+// ============================================================
+// 15.2 RAPPORT DES PAIEMENTS
+// ============================================================
+
+function generatePaymentsReport() {
+    const payments = userRole === 'school' ? 
+        DB.payments.filter(p => p.school_id === userSchoolId) : 
+        DB.payments;
+    
+    const schoolName = userRole === 'school' ? 
+        DB.schools.find(s => s.id === userSchoolId)?.name || 'Mon Ecole' : 
+        'REPUBLIQUE DEMOCRATIQUE DU CONGO';
+    
+    const doc = createPDFDocument('RAPPORT DES PAIEMENTS', schoolName);
+    
+    // Statistiques
+    const totalPayments = payments.length;
+    const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0);
+    const completedPayments = payments.filter(p => p.status === 'completed').length;
+    const pendingPayments = payments.filter(p => p.status === 'pending').length;
+    const completedAmount = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
+    
+    // Ajouter les statistiques avec mise en forme
+    doc.setFontSize(11);
+    doc.text(`Total des paiements : ${totalPayments}`, 14, 35);
+    doc.text(`Montant total : ${totalAmount.toLocaleString()} FCFA`, 14, 42);
+    doc.text(`Paiements effectues : ${completedPayments} (${completedAmount.toLocaleString()} FCFA)`, 14, 49);
+    doc.text(`Paiements en attente : ${pendingPayments}`, 14, 56);
+    
+    // Tableau des paiements
+    const tableData = payments.map(p => [
+        p.invoice || 'N/A',
+        p.student || 'N/A',
+        p.amount?.toLocaleString() + ' FCFA' || '0 FCFA',
+        p.method || 'N/A',
+        p.type || 'N/A',
+        p.status === 'completed' ? 'Paye' : 'En attente',
+        p.date || 'N/A'
+    ]);
+    
+    doc.autoTable({
+        startY: 63,
+        head: [['Facture', 'Etudiant', 'Montant', 'Methode', 'Type', 'Statut', 'Date']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: {
+            fillColor: [79, 70, 229],
+            textColor: [255, 255, 255],
+            fontSize: 9,
+            fontStyle: 'bold'
+        },
+        bodyStyles: {
+            fontSize: 8
+        },
+        alternateRowStyles: {
+            fillColor: [245, 247, 250]
+        },
+        columnStyles: {
+            2: { halign: 'right' },
+            5: { 
+                cellWidth: 20,
+                halign: 'center'
+            }
+        },
+        didParseCell: function(data) {
+            if (data.section === 'body' && data.column.index === 5) {
+                if (data.cell.raw === 'Paye') {
+                    data.cell.styles.fillColor = [209, 250, 229];
+                    data.cell.styles.textColor = [6, 95, 70];
+                } else {
+                    data.cell.styles.fillColor = [254, 243, 199];
+                    data.cell.styles.textColor = [146, 64, 14];
+                }
+            }
+        },
+        margin: { left: 14, right: 14 },
+        pageBreak: 'auto'
+    });
+    
+    // Ajouter le résumé
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(10);
+    doc.text('Resume financier :', 14, finalY);
+    doc.text(`Total encaisse : ${completedAmount.toLocaleString()} FCFA`, 14, finalY + 7);
+    doc.text(`Total en attente : ${(totalAmount - completedAmount).toLocaleString()} FCFA`, 14, finalY + 14);
+    
+    addFooter(doc, 'Rapport genere le ' + new Date().toLocaleDateString('fr-FR'));
+    
+    const filename = `rapport_paiements_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(filename);
+    
+    showReportResult('payments', payments.length, filename);
+    showToast('Rapport PDF genere avec succes', 'success');
+}
+
+// ============================================================
+// 15.3 RAPPORT DES ÉCOLES
+// ============================================================
+
+function generateSchoolsReport() {
+    const schools = userRole === 'admin' ? DB.schools : DB.schools.filter(s => s.id === userSchoolId);
+    
+    const doc = createPDFDocument('RAPPORT DES ECOLES', 'REPUBLIQUE DEMOCRATIQUE DU CONGO');
+    
+    // Statistiques
+    const totalSchools = schools.length;
+    const totalStudents = DB.students.length;
+    const totalTeachers = DB.teachers.length;
+    const totalClasses = DB.classes.length;
+    
+    doc.setFontSize(11);
+    doc.text(`Total des ecoles : ${totalSchools}`, 14, 35);
+    doc.text(`Total des etudiants : ${totalStudents}`, 14, 42);
+    doc.text(`Total des enseignants : ${totalTeachers}`, 14, 49);
+    doc.text(`Total des classes : ${totalClasses}`, 14, 56);
+    
+    // Tableau des écoles
+    const tableData = schools.map(s => {
+        const studentsCount = DB.students.filter(st => st.school_id === s.id).length;
+        const teachersCount = DB.teachers.filter(t => t.school_id === s.id).length;
+        const classesCount = DB.classes.filter(c => c.school_id === s.id).length;
+        const payments = DB.payments.filter(p => p.school_id === s.id);
+        const revenue = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
+        
+        return [
+            s.code || 'N/A',
+            s.name || 'N/A',
+            studentsCount,
+            teachersCount,
+            classesCount,
+            revenue.toLocaleString() + ' FCFA',
+            s.status || 'N/A'
+        ];
+    });
+    
+    doc.autoTable({
+        startY: 63,
+        head: [['Code', 'Nom de l\'ecole', 'Etudiants', 'Enseignants', 'Classes', 'Revenus', 'Statut']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: {
+            fillColor: [79, 70, 229],
+            textColor: [255, 255, 255],
+            fontSize: 9,
+            fontStyle: 'bold'
+        },
+        bodyStyles: {
+            fontSize: 8
+        },
+        alternateRowStyles: {
+            fillColor: [245, 247, 250]
+        },
+        columnStyles: {
+            5: { halign: 'right' }
+        },
+        margin: { left: 14, right: 14 },
+        pageBreak: 'auto'
+    });
+    
+    addFooter(doc, 'Rapport genere le ' + new Date().toLocaleDateString('fr-FR'));
+    
+    const filename = `rapport_ecoles_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(filename);
+    
+    showReportResult('schools', schools.length, filename);
+    showToast('Rapport PDF genere avec succes', 'success');
+}
+
+// ============================================================
+// 15.4 RAPPORT DES PARENTS
+// ============================================================
+
+function generateParentsReport() {
+    const parents = DB.parentAccounts;
+    
+    const doc = createPDFDocument('RAPPORT DES PARENTS', 'REPUBLIQUE DEMOCRATIQUE DU CONGO');
+    
+    // Statistiques
+    const totalParents = parents.length;
+    const totalChildren = parents.reduce((sum, p) => sum + p.children_ids.length, 0);
+    const parentsWithChildren = parents.filter(p => p.children_ids.length > 0).length;
+    
+    doc.setFontSize(11);
+    doc.text(`Total des parents : ${totalParents}`, 14, 35);
+    doc.text(`Total des enfants : ${totalChildren}`, 14, 42);
+    doc.text(`Parents avec enfants : ${parentsWithChildren}`, 14, 49);
+    
+    // Tableau des parents
+    const tableData = parents.map(p => [
+        p.code || 'N/A',
+        p.name || 'N/A',
+        p.email || 'N/A',
+        p.phone || 'N/A',
+        p.children_ids.length || 0,
+        p.children_ids.map(id => {
+            const child = DB.students.find(s => s.id === id);
+            return child ? `${child.first_name} ${child.last_name}` : 'N/A';
+        }).join(', ') || 'Aucun'
+    ]);
+    
+    doc.autoTable({
+        startY: 56,
+        head: [['Code', 'Nom', 'Email', 'Telephone', 'Enfants', 'Noms des enfants']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: {
+            fillColor: [236, 72, 153],
+            textColor: [255, 255, 255],
+            fontSize: 9,
+            fontStyle: 'bold'
+        },
+        bodyStyles: {
+            fontSize: 8
+        },
+        alternateRowStyles: {
+            fillColor: [252, 248, 250]
+        },
+        columnStyles: {
+            5: { cellWidth: 50 }
+        },
+        margin: { left: 14, right: 14 },
+        pageBreak: 'auto'
+    });
+    
+    addFooter(doc, 'Rapport genere le ' + new Date().toLocaleDateString('fr-FR'));
+    
+    const filename = `rapport_parents_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(filename);
+    
+    showReportResult('parents', parents.length, filename);
+    showToast('Rapport PDF genere avec succes', 'success');
+}
+
+// ============================================================
+// 15.5 RAPPORT DES CLASSES
+// ============================================================
+
+function generateClassesReport() {
+    const classes = userRole === 'school' ? 
+        DB.classes.filter(c => c.school_id === userSchoolId) : 
+        DB.classes;
+    
+    const schoolName = userRole === 'school' ? 
+        DB.schools.find(s => s.id === userSchoolId)?.name || 'Mon Ecole' : 
+        'REPUBLIQUE DEMOCRATIQUE DU CONGO';
+    
+    const doc = createPDFDocument('RAPPORT DES CLASSES', schoolName);
+    
+    // Statistiques
+    const totalClasses = classes.length;
+    const totalStudents = DB.students.filter(s => 
+        classes.some(c => c.name === s.class && c.school_id === s.school_id)
+    ).length;
+    const totalTeachers = [...new Set(classes.map(c => c.teacher_id))].filter(id => id).length;
+    
+    doc.setFontSize(11);
+    doc.text(`Total des classes : ${totalClasses}`, 14, 35);
+    doc.text(`Total des etudiants : ${totalStudents}`, 14, 42);
+    doc.text(`Total des enseignants : ${totalTeachers}`, 14, 49);
+    
+    // Tableau des classes
+    const tableData = classes.map(c => {
+        const teacher = DB.teachers.find(t => t.id === c.teacher_id);
+        const students = DB.students.filter(s => s.class === c.name && s.school_id === c.school_id);
+        const payments = DB.payments.filter(p => students.some(s => s.id === p.student_id));
+        const revenue = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
+        
+        return [
+            c.name || 'N/A',
+            c.level || 'N/A',
+            students.length || 0,
+            teacher ? `${teacher.first_name} ${teacher.last_name}` : 'Non assigne',
+            revenue.toLocaleString() + ' FCFA',
+            c.status || 'N/A'
+        ];
+    });
+    
+    doc.autoTable({
+        startY: 56,
+        head: [['Nom', 'Niveau', 'Etudiants', 'Enseignant', 'Revenus', 'Statut']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: {
+            fillColor: [79, 70, 229],
+            textColor: [255, 255, 255],
+            fontSize: 9,
+            fontStyle: 'bold'
+        },
+        bodyStyles: {
+            fontSize: 8
+        },
+        alternateRowStyles: {
+            fillColor: [245, 247, 250]
+        },
+        columnStyles: {
+            4: { halign: 'right' }
+        },
+        margin: { left: 14, right: 14 },
+        pageBreak: 'auto'
+    });
+    
+    addFooter(doc, 'Rapport genere le ' + new Date().toLocaleDateString('fr-FR'));
+    
+    const filename = `rapport_classes_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(filename);
+    
+    showReportResult('classes', classes.length, filename);
+    showToast('Rapport PDF genere avec succes', 'success');
+}
+
+// ============================================================
+// 15.6 RAPPORT D'UN ENSEIGNANT SPÉCIFIQUE
+// ============================================================
+
+function generateTeacherReport() {
+    // Si un enseignant est connecté, générer son rapport
+    if (userRole === 'teacher') {
+        const teacher = DB.teachers.find(t => t.id === currentUser?.id);
+        if (teacher) {
+            generateSingleTeacherReport(teacher.id);
+            return;
+        }
+    }
+    
+    // Sinon, demander quel enseignant
+    showModal('Rapport d\'un enseignant', `
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Selectionner un enseignant</label>
+            <select class="form-select" id="reportTeacherSelect">
+                ${DB.teachers.map(t => 
+                    `<option value="${t.id}">${t.first_name} ${t.last_name} - ${t.subject}</option>`
+                ).join('')}
+            </select>
+        </div>
+        <p class="text-secondary small">Le rapport contiendra : informations personnelles, classes, etudiants, paiements</p>
+    `, () => {
+        const teacherId = parseInt(document.getElementById('reportTeacherSelect').value);
+        if (teacherId) {
+            generateSingleTeacherReport(teacherId);
+        }
+    });
+}
+
+function generateSingleTeacherReport(teacherId) {
+    const teacher = DB.teachers.find(t => t.id === teacherId);
+    if (!teacher) {
+        showToast('Enseignant non trouve', 'error');
+        return;
+    }
+    
+    const doc = createPDFDocument('RAPPORT ENSEIGNANT', teacher.school || 'REPUBLIQUE DEMOCRATIQUE DU CONGO');
+    
+    // Informations personnelles
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${teacher.first_name} ${teacher.last_name}`, 14, 35);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Matricule : ${teacher.matricule || 'N/A'}`, 14, 42);
+    doc.text(`Matiere : ${teacher.subject || 'N/A'}`, 14, 49);
+    doc.text(`Ecole : ${teacher.school || 'N/A'}`, 14, 56);
+    doc.text(`Email : ${teacher.email || 'N/A'}`, 14, 63);
+    doc.text(`Telephone : ${teacher.phone || 'N/A'}`, 14, 70);
+    doc.text(`Statut : ${teacher.status || 'Actif'}`, 14, 77);
+    
+    let currentY = 84;
+    
+    // Classes enseignées
+    const classes = DB.classes.filter(c => c.teacher_id === teacherId);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Classes enseignees :', 14, currentY);
+    currentY += 7;
+    
+    if (classes.length === 0) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.text('Aucune classe assignee', 14, currentY);
+        currentY += 10;
+    } else {
+        const classData = classes.map(c => [
+            c.name || 'N/A',
+            c.level || 'N/A',
+            DB.students.filter(s => s.class === c.name && s.school_id === c.school_id).length || 0
+        ]);
+        
+        doc.autoTable({
+            startY: currentY,
+            head: [['Classe', 'Niveau', 'Etudiants']],
+            body: classData,
+            theme: 'grid',
+            headStyles: {
+                fillColor: [79, 70, 229],
+                textColor: [255, 255, 255],
+                fontSize: 9,
+                fontStyle: 'bold'
+            },
+            bodyStyles: {
+                fontSize: 8
+            },
+            alternateRowStyles: {
+                fillColor: [245, 247, 250]
+            },
+            margin: { left: 14, right: 14 },
+            pageBreak: 'auto'
+        });
+        
+        currentY = doc.lastAutoTable.finalY + 10;
+    }
+    
+    // Étudiants
+    const classNames = classes.map(c => c.name);
+    const students = DB.students.filter(s => classNames.includes(s.class) && s.school_id === teacher.school_id);
+    
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Etudiants (${students.length}) :`, 14, currentY);
+    currentY += 7;
+    
+    if (students.length > 0) {
+        const studentData = students.map(s => [
+            s.matricule || 'N/A',
+            s.last_name || '',
+            s.first_name || '',
+            s.class || 'N/A',
+            s.status || 'N/A'
+        ]);
+        
+        doc.autoTable({
+            startY: currentY,
+            head: [['Matricule', 'Nom', 'Prenom', 'Classe', 'Statut']],
+            body: studentData.slice(0, 50),
+            theme: 'grid',
+            headStyles: {
+                fillColor: [79, 70, 229],
+                textColor: [255, 255, 255],
+                fontSize: 8,
+                fontStyle: 'bold'
+            },
+            bodyStyles: {
+                fontSize: 7
+            },
+            alternateRowStyles: {
+                fillColor: [245, 247, 250]
+            },
+            margin: { left: 14, right: 14 },
+            pageBreak: 'auto'
+        });
+        
+        if (students.length > 50) {
+            const finalY = doc.lastAutoTable.finalY + 7;
+            doc.setFontSize(8);
+            doc.text(`... et ${students.length - 50} autres etudiants`, 14, finalY);
+        }
+    } else {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.text('Aucun etudiant', 14, currentY);
+    }
+    
+    addFooter(doc, 'Rapport genere le ' + new Date().toLocaleDateString('fr-FR'));
+    
+    const filename = `rapport_enseignant_${teacher.last_name}_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(filename);
+    
+    showToast(`Rapport de ${teacher.first_name} ${teacher.last_name} genere`, 'success');
+}
+
+// ============================================================
+// 15.7 FONCTIONS UTILITAIRES POUR LES PDF
+// ============================================================
+
+function createPDFDocument(title, institution) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    // En-tete officiel avec bande colorée
+    doc.setFillColor(79, 70, 229);
+    doc.rect(0, 0, pageWidth, 8, 'F');
+    
+    // Titre de l'institution
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(79, 70, 229);
+    doc.text(institution.toUpperCase(), pageWidth / 2, 20, { align: 'center' });
+    
+    // Sous-titre
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    doc.text('Systeme Integre de Gestion Scolaire - EduGest', pageWidth / 2, 26, { align: 'center' });
+    
+    // Ligne de separation
+    doc.setDrawColor(79, 70, 229);
+    doc.setLineWidth(0.5);
+    doc.line(14, 29, pageWidth - 14, 29);
+    
+    // Titre du rapport
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text(title, pageWidth / 2, 35, { align: 'center' });
+    
+    return doc;
+}
+
+function addFooter(doc, text) {
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    
+    // Pied de page
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.line(14, pageHeight - 15, pageWidth - 14, pageHeight - 15);
+    
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(150, 150, 150);
+    doc.text(text, pageWidth / 2, pageHeight - 8, { align: 'center' });
+    
+    // Numero de page
+    const pageNumber = doc.internal.getCurrentPageInfo().pageNumber;
+    const totalPages = doc.internal.getNumberOfPages();
+    doc.text(`Page ${pageNumber} / ${totalPages}`, pageWidth - 14, pageHeight - 8, { align: 'right' });
+}
+
+function showReportResult(type, count, filename) {
+    const container = document.getElementById('reportResult');
+    const icons = {
+        students: 'bi-people',
+        payments: 'bi-credit-card',
+        schools: 'bi-building',
+        parents: 'bi-person-heart',
+        classes: 'bi-easel',
+        teacher: 'bi-person-video3'
+    };
+    
+    const colors = {
+        students: 'primary',
+        payments: 'success',
+        schools: 'secondary',
+        parents: 'pink',
+        classes: 'info',
+        teacher: 'warning'
+    };
+    
+    const titles = {
+        students: 'Etudiants',
+        payments: 'Paiements',
+        schools: 'Ecoles',
+        parents: 'Parents',
+        classes: 'Classes',
+        teacher: 'Enseignant'
+    };
+    
+    const color = colors[type] || 'success';
+    const icon = icons[type] || 'bi-file-earmark-pdf';
+    
+    container.innerHTML = `
+        <div class="alert alert-${color} mt-3">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi ${icon}" style="font-size:2rem;"></i>
+                <div>
+                    <h6 class="mb-0">Rapport genere avec succes</h6>
+                    <p class="mb-0 small text-muted">
+                        ${count} ${titles[type] || 'elements'} • ${filename}
+                    </p>
+                </div>
+                <div class="ms-auto">
+                    <button class="btn btn-${color} btn-sm" onclick="window.open('${filename}')">
+                        <i class="bi bi-download"></i> Telecharger
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('reportResult').innerHTML = ''">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ============================================================
+// 15.8 RAPPORT RAPIDE DEPUIS LE TABLEAU DE BORD
+// ============================================================
+
+function generateQuickReport() {
+    showModal('Generer un rapport rapide', `
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="p-3 border rounded-3 text-center report-card" style="cursor:pointer;" onclick="generateReport('students');closeModal();">
+                    <i class="bi bi-people" style="font-size:2rem;color:var(--primary);"></i>
+                    <h6 class="mt-2">Etudiants</h6>
+                    <small class="text-muted">Liste complete des etudiants</small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 border rounded-3 text-center report-card" style="cursor:pointer;" onclick="generateReport('payments');closeModal();">
+                    <i class="bi bi-credit-card" style="font-size:2rem;color:var(--success);"></i>
+                    <h6 class="mt-2">Paiements</h6>
+                    <small class="text-muted">Historique des paiements</small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 border rounded-3 text-center report-card" style="cursor:pointer;" onclick="generateReport('schools');closeModal();">
+                    <i class="bi bi-building" style="font-size:2rem;color:var(--secondary);"></i>
+                    <h6 class="mt-2">Ecoles</h6>
+                    <small class="text-muted">Liste des ecoles</small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 border rounded-3 text-center report-card" style="cursor:pointer;" onclick="generateReport('parents');closeModal();">
+                    <i class="bi bi-person-heart" style="font-size:2rem;color:var(--parent-color);"></i>
+                    <h6 class="mt-2">Parents</h6>
+                    <small class="text-muted">Liste des parents</small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 border rounded-3 text-center report-card" style="cursor:pointer;" onclick="generateReport('classes');closeModal();">
+                    <i class="bi bi-easel" style="font-size:2rem;color:var(--info);"></i>
+                    <h6 class="mt-2">Classes</h6>
+                    <small class="text-muted">Liste des classes</small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 border rounded-3 text-center report-card" style="cursor:pointer;" onclick="generateReport('teacher');closeModal();">
+                    <i class="bi bi-person-video3" style="font-size:2rem;color:var(--warning);"></i>
+                    <h6 class="mt-2">Enseignant</h6>
+                    <small class="text-muted">Rapport d'un enseignant</small>
+                </div>
+            </div>
+        </div>
+    `, null);
+}
+// ============================================================
+// 16. PARAMÈTRES
+// ============================================================
+
+function clearData() {
+    if (!confirm('⚠️ Voulez-vous vraiment vider toutes les données ? Cette action est irréversible.')) return;
+    DB.students = [];
+    DB.payments = [];
+    DB.messages = [];
+    DB.notifications = [];
+    showToast('Toutes les données ont été vidées', 'warning');
+    loadPageData('dashboard');
+}
+
+function exportData() {
+    const data = {
+        schools: DB.schools,
+        schoolAccounts: DB.schoolAccounts,
+        parentAccounts: DB.parentAccounts,
+        students: DB.students,
+        payments: DB.payments,
+        teachers: DB.teachers,
+        classes: DB.classes,
+        messages: DB.messages,
+        notifications: DB.notifications,
+        exportDate: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `edugest_export_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Données exportées avec succès !', 'success');
+}
+
+// ============================================================
+// 17. MODAL
+// ============================================================
+
+function showModal(title, body, callback) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalBody').innerHTML = body;
+    document.getElementById('modalFooter').style.display = callback ? 'flex' : 'none';
+    modalCallback = callback || null;
+    const modal = new bootstrap.Modal(document.getElementById('appModal'));
+    modal.show();
+}
+
+function closeModal() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('appModal'));
+    if (modal) modal.hide();
+}
+
+function modalSave() {
+    if (modalCallback) {
+        modalCallback();
+    }
+}
+
+// ============================================================
+// 18. TOAST
+// ============================================================
+
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast-custom ${type}`;
+    const icons = {
+        success: 'bi-check-circle-fill',
+        error: 'bi-exclamation-circle-fill',
+        info: 'bi-info-circle-fill',
+        warning: 'bi-exclamation-triangle-fill',
+        pink: 'bi-heart-fill'
+    };
+    toast.innerHTML = `<i class="bi ${icons[type] || icons.info}"></i> ${message}`;
+    container.appendChild(toast);
+    setTimeout(() => { toast.remove(); }, 3500);
+}
+
+// ============================================================
+// 19. PROFIL
+// ============================================================
+
+function showProfile() {
+    showModal('👤 Mon profil', `
+        <div class="text-center mb-3">
+            <div style="width:80px;height:80px;border-radius:50%;background:${userRole === 'parent' ? 'var(--parent-color)' : 'linear-gradient(135deg,var(--primary),var(--secondary))'};display:inline-flex;align-items:center;justify-content:center;color:white;font-size:2rem;font-weight:600;">${document.getElementById('userAvatar').textContent}</div>
+            <h5 class="mt-2">${document.getElementById('userName').textContent}</h5>
+            <p class="text-secondary small">${document.getElementById('userRole').textContent}</p>
+        </div>
+        <div class="row g-2">
+            <div class="col-6"><strong>Rôle :</strong> ${userRole === 'admin' ? 'Administrateur' : userRole === 'school' ? 'École' : userRole === 'parent' ? 'Parent' : 'Enseignant'}</div>
+            <div class="col-6"><strong>Statut :</strong> <span class="badge bg-success">Connecté</span></div>
+            <div class="col-12"><strong>Dernière connexion :</strong> ${new Date().toLocaleString('fr-FR')}</div>
+            ${currentUser ? `
+                <div class="col-12"><strong>Code :</strong> ${currentUser.code || 'N/A'}</div>
+            ` : ''}
+        </div>
+    `, null);
+}
+
+
+
+// ============================================================
+// INITIALISATION DE LA SYNCHRONISATION
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    SyncSystem.init();
+    
+    EventSystem.on('refreshUI', function() {
+        loadPageData(currentPage);
+        if (currentPage === 'dashboard') {
+            loadDashboard();
+        }
+    });
+    
+    EventSystem.on('notification', function(notification) {
+        const type = notification.type || 'info';
+        showToast(notification.text, type);
+    });
 });
 
-/* ==================== INITIALISATION ==================== */
-DB.init();
-setTimeout(()=>{
-  const splash=document.getElementById('splash');
-  splash.classList.add('out');
-  setTimeout(()=>{
-    splash.classList.add('hidden');
-    checkSession();
-    if(!CU)showScreen('login-screen');
-  },500);
-},1500);
+// Exposer les fonctions globalement
+window.selectRole = selectRole;
+window.handleLogin = handleLogin;
+window.navigateTo = navigateTo;
+window.toggleSidebar = toggleSidebar;
+window.logout = logout;
+window.showToast = showToast;
+window.showProfile = showProfile;
+window.showSchoolCodes = showSchoolCodes;
+window.showParentCodes = showParentCodes;
+window.showStudentForm = showStudentForm;
+window.viewStudent = viewStudent;
+window.editStudent = editStudent;
+window.deleteStudent = deleteStudent;
+window.showPaymentForm = showPaymentForm;
+window.showPaymentFormForStudent = showPaymentFormForStudent;
+window.viewPayment = viewPayment;
+window.validatePayment = validatePayment;
+window.deletePayment = deletePayment;
+window.showMessageForm = showMessageForm;
+window.markMessageRead = markMessageRead;
+window.showSchoolForm = showSchoolForm;
+window.editSchool = editSchool;
+window.deleteSchool = deleteSchool;
+window.showParentForm = showParentForm;
+window.viewParent = viewParent;
+window.editParent = editParent;
+window.deleteParent = deleteParent;
+window.showTeacherForm = showTeacherForm;
+window.showClassForm = showClassForm;
+window.generateReport = generateReport;
+window.clearData = clearData;
+window.exportData = exportData;
+window.closeModal = closeModal;
+window.modalSave = modalSave;
+
+window.toggleParentFields = toggleParentFields;
+window.SyncSystem = SyncSystem;
+window.NotificationSystem = NotificationSystem;
+window.EventSystem = EventSystem;
+
+window.generateReceipt = generateReceipt;
+window.generateStudentReceipt = generateStudentReceipt;

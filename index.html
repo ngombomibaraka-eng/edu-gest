@@ -1,115 +1,557 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>EduGest Pro — Gestion Scolaire Numerique</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<link rel="stylesheet" href="style.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduGest - Système Intégré de Gestion Scolaire</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- jsPDF pour les rapports PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<div id="splash"><i class="fas fa-graduation-cap"></i><h1>EduGest Pro</h1><p>Plateforme de gestion scolaire numerique</p><div class="sbar"><span></span></div></div>
+<!-- ============================================================ -->
+<!-- ===== PAGE DE CONNEXION ===== -->
+<!-- ============================================================ -->
+<div id="loginPage" class="login-page">
+    <div class="login-box">
+        <div class="login-logo">
+            <div class="brand-icon"><i class="bi bi-mortarboard-fill"></i></div>
+            <h2>EduGest</h2>
+            <p>Système intégré de gestion scolaire</p>
+            <small class="text-secondary">Ville d'Uvira - RDC</small>
+        </div>
 
-<div id="login-screen" class="auth-screen hidden">
-  <div class="auth-bg"><span></span><span></span></div>
-  <div class="auth-card">
-    <div class="auth-head"><i class="fas fa-graduation-cap"></i><h2>EduGest Pro</h2><p>Connectez-vous a votre espace</p></div>
-    <form id="login-form" onsubmit="doLogin(event)">
-      <div class="fg"><label>Email</label><input type="email" id="l-email" required placeholder="votre@email.com"></div>
-      <div class="fg"><label>Mot de passe</label><div class="pw-wrap"><input type="password" id="l-pass" required placeholder="********"><button type="button" class="pw-toggle" onclick="togglePw('l-pass')"><i class="fas fa-eye"></i></button></div></div>
-      <button type="submit" class="btn btn-p btn-bl">Se connecter</button>
-    </form>
-    <div class="auth-link"><p>Pas encore de compte ? <a onclick="showScreen('register-screen')">Creer un compte</a></p></div>
-    <div class="demo-acc">
-      <p>Comptes de demonstration</p>
-      <div class="demo-btns">
-        <button onclick="fillL('coord@edugest.pro','Admin@2025')">Coordinateur</button>
-        <button onclick="fillL('prefet@edugest.pro','Prefet@2025')">Prefet</button>
-        <button onclick="fillL('prof@edugest.pro','Prof@2025')">Enseignant</button>
-        <button onclick="fillL('eleve@edugest.pro','Eleve@2025')">Eleve</button>
-        <button onclick="fillL('parent@edugest.pro','Parent@2025')">Parent</button>
-      </div>
+        <!-- Sélecteur de rôle -->
+        <div class="role-selector">
+            <div class="role-btn active" data-role="admin" onclick="selectRole('admin')">
+                <i class="bi bi-person-badge" style="color:var(--primary);"></i>
+                <div class="role-label">Admin</div>
+            </div>
+            <div class="role-btn" data-role="school" onclick="selectRole('school')">
+                <i class="bi bi-building" style="color:var(--success);"></i>
+                <div class="role-label">École</div>
+            </div>
+            <div class="role-btn" data-role="teacher" onclick="selectRole('teacher')">
+                <i class="bi bi-person-video2" style="color:var(--info);"></i>
+                <div class="role-label">Enseignant</div>
+            </div>
+            <div class="role-btn" data-role="parent" onclick="selectRole('parent')">
+                <i class="bi bi-person-heart" style="color:var(--parent-color);"></i>
+                <div class="role-label">Parent</div>
+            </div>
+        </div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <!-- Champs Admin / Enseignant -->
+            <div id="adminTeacherFields">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Email</label>
+                    <input type="email" class="form-control" id="loginEmail" placeholder="email@exemple.com" value="admin@edugest.com">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Mot de passe</label>
+                    <input type="password" class="form-control" id="loginPassword" placeholder="••••••••" value="password123">
+                </div>
+            </div>
+
+            <!-- Champs École -->
+            <div id="schoolFields" style="display:none;">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Code de l'école</label>
+                    <input type="text" class="form-control" id="schoolCode" placeholder="Ex: SCH-001" style="text-transform:uppercase;">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Mot de passe</label>
+                    <input type="password" class="form-control" id="schoolPassword" placeholder="••••••••">
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="showSchoolCodes()">
+                    <i class="bi bi-eye"></i> Voir les codes écoles
+                </button>
+            </div>
+
+            <!-- Champs Parent -->
+            <div id="parentFields" style="display:none;">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Code Parent</label>
+                    <input type="text" class="form-control" id="parentCode" placeholder="Ex: PAR-001" style="text-transform:uppercase;">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Mot de passe</label>
+                    <input type="password" class="form-control" id="parentPassword" placeholder="••••••••">
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-pink w-100" onclick="showParentCodes()" style="border-color:var(--parent-color);color:var(--parent-color);">
+                    <i class="bi bi-eye"></i> Voir les codes parents
+                </button>
+            </div>
+
+            <button type="submit" class="btn-login">
+                <i class="bi bi-box-arrow-in-right me-2"></i> Se connecter
+            </button>
+            <div id="loginError" class="text-danger text-center mt-3" style="display:none;"></div>
+        </form>
     </div>
-  </div>
 </div>
 
-<div id="register-screen" class="auth-screen hidden">
-  <div class="auth-bg"><span></span><span></span></div>
-  <div class="auth-card">
-    <div class="auth-head"><i class="fas fa-user-plus"></i><h2>Creer un compte</h2><p>Rejoignez votre etablissement</p></div>
-    <form id="reg-form" onsubmit="doRegister(event)">
-      <div class="fg"><label>Nom complet</label><input type="text" id="r-name" required placeholder="Votre nom"></div>
-      <div class="fg"><label>Email</label><input type="email" id="r-email" required placeholder="votre@email.com"></div>
-      <div class="fg"><label>Telephone</label><input type="tel" id="r-phone" placeholder="+243 ..."></div>
-      <div class="fg"><label>Role</label>
-        <select id="r-role" required onchange="toggleRegCode()">
-          <option value="">Choisir...</option>
-          <option value="prefet">Prefet d'etablissement</option>
-          <option value="enseignant">Enseignant</option>
-          <option value="eleve">Eleve</option>
-          <option value="parent">Parent</option>
-        </select>
-      </div>
-      <div class="fg" id="r-code-grp">
-        <label>Code d'etablissement</label>
-        <input type="text" id="r-code" placeholder="Ex: MW2025XYZ">
-        <p style="font-size:10px;color:var(--mut);margin-top:4px">Demandez ce code au prefet ou coordinateur de votre etablissement</p>
-      </div>
-      <div class="fg"><label>Mot de passe</label><div class="pw-wrap"><input type="password" id="r-pass" required minlength="8" placeholder="Min. 8 caracteres" oninput="checkPwStr()"><button type="button" class="pw-toggle" onclick="togglePw('r-pass')"><i class="fas fa-eye"></i></button></div><div class="pw-strength"><span id="pw-str-bar"></span></div></div>
-      <div class="fg"><label>Confirmer le mot de passe</label><input type="password" id="r-pass2" required placeholder="Repetez le mot de passe"></div>
-      <button type="submit" class="btn btn-p btn-bl">Creer le compte</button>
-    </form>
-    <div class="auth-link"><p>Deja un compte ? <a onclick="showScreen('login-screen')">Se connecter</a></p></div>
-  </div>
-</div>
+<!-- ============================================================ -->
+<!-- ===== APPLICATION PRINCIPALE ===== -->
+<!-- ============================================================ -->
+<div id="app" style="display:none;">
 
-<div id="app" class="hidden">
-  <aside id="sidebar">
-    <div class="sb-head"><i class="fas fa-graduation-cap"></i><span>EduGest</span></div>
-    <nav id="sb-nav"></nav>
-    <div class="sb-foot"><span class="sdot" id="conn-dot"></span><span id="conn-txt">En ligne</span></div>
-  </aside>
-  <div id="sb-ov" class="hidden" onclick="toggleSB()"></div>
-  <main id="main">
-    <header id="topbar">
-      <div class="tb-l">
-        <button id="menu-tog" onclick="toggleSB()"><i class="fas fa-bars"></i></button>
-        <div class="sbox"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher..." oninput="globalSearch(this.value)"></div>
-      </div>
-      <div class="tb-r">
-        <div class="lang-sw">
-          <button class="act" onclick="setLang('fr')">FR</button>
-          <button onclick="setLang('sw')">SW</button>
-          <button onclick="setLang('en')">EN</button>
+    <!-- ===== SIDEBAR ===== -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon"><i class="bi bi-mortarboard-fill"></i></div>
+            <div>
+                <h1>EduGest</h1>
+                <small id="schoolNameDisplay">Uvira • RDC</small>
+            </div>
         </div>
-        <button class="tib" onclick="toggleNP()"><i class="fas fa-bell"></i><span class="notif-b hidden" id="n-badge">0</span></button>
-        <div class="umen" onclick="toggleUD()">
-          <div class="uav" id="u-av">?</div>
-          <span class="un" id="u-nm">User</span>
-          <i class="fas fa-chevron-down uc"></i>
-          <div class="udrop hidden" id="u-drop">
-            <a onclick="nav('parametres')"><i class="fas fa-cog"></i>Parametres</a>
-            <a onclick="doLogout()"><i class="fas fa-sign-out-alt"></i>Deconnexion</a>
-          </div>
+        <div class="sidebar-menu">
+            <div class="menu-label">Menu principal</div>
+            <a class="nav-link active" data-page="dashboard" onclick="navigateTo('dashboard')">
+                <i class="bi bi-grid-1x2-fill"></i> Tableau de bord
+            </a>
+            <a class="nav-link" data-page="students" id="menuStudents" onclick="navigateTo('students')">
+                <i class="bi bi-people-fill"></i> Étudiants
+                <span class="badge" id="studentCount">0</span>
+            </a>
+            <a class="nav-link" data-page="myChildren" id="menuMyChildren" style="display:none;" onclick="navigateTo('myChildren')">
+                <i class="bi bi-heart-fill" style="color:var(--parent-color);"></i> Mes Enfants
+            </a>
+            <a class="nav-link" data-page="payments" onclick="navigateTo('payments')">
+                <i class="bi bi-credit-card-fill"></i> Paiements
+                <span class="badge" id="pendingCount">0</span>
+            </a>
+            <a class="nav-link" data-page="messages" onclick="navigateTo('messages')">
+                <i class="bi bi-chat-dots-fill"></i> Messages
+                <span class="badge" id="messageCount">0</span>
+            </a>
+            
+            <div class="menu-label" id="adminMenuLabel">Gestion</div>
+            <a class="nav-link" data-page="schools" id="menuSchools" style="display:none;" onclick="navigateTo('schools')">
+                <i class="bi bi-building-fill"></i> Écoles
+            </a>
+            <a class="nav-link" data-page="teachers" id="menuTeachers" onclick="navigateTo('teachers')">
+                <i class="bi bi-person-video3"></i> Enseignants
+            </a>
+            <a class="nav-link" data-page="classes" onclick="navigateTo('classes')">
+                <i class="bi bi-easel-fill"></i> Classes
+            </a>
+            <a class="nav-link" data-page="parents" id="menuParents" style="display:none;" onclick="navigateTo('parents')">
+                <i class="bi bi-person-heart" style="color:var(--parent-color);"></i> Parents
+            </a>
+            
+            <div class="menu-label">Rapports</div>
+            <a class="nav-link" data-page="reports" onclick="navigateTo('reports')">
+                <i class="bi bi-file-earmark-text-fill"></i> Rapports
+            </a>
+            
+            <div class="menu-label">Système</div>
+            <a class="nav-link" data-page="settings" onclick="navigateTo('settings')">
+                <i class="bi bi-gear-fill"></i> Paramètres
+            </a>
+            <a class="nav-link" onclick="logout()">
+                <i class="bi bi-box-arrow-right"></i> Déconnexion
+            </a>
         </div>
-      </div>
-    </header>
-    <div id="content"></div>
-  </main>
+    </nav>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="main-content">
+
+        <!-- ===== TOPBAR ===== -->
+        <div class="topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="sidebar-toggle" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="page-title">
+                    <h2 id="pageTitle">Tableau de bord <small>Aperçu général</small></h2>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="user-profile" onclick="showProfile()">
+                    <div class="avatar" id="userAvatar" style="background:linear-gradient(135deg,var(--primary),var(--secondary));">A</div>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">Administrateur</div>
+                        <div class="user-role" id="userRole">Admin</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE CONTENT ===== -->
+        <div class="page-content">
+
+            <!-- ========================================================== -->
+            <!-- SECTION : TABLEAU DE BORD                                   -->
+            <!-- ========================================================== -->
+            <div class="page-section active" id="section-dashboard">
+                <!-- Statistiques -->
+                <div class="row g-3 mb-4" id="statsContainer">
+                    <div class="col-xl-2 col-lg-4 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-icon blue"><i class="bi bi-building"></i></div>
+                            <div class="stat-number" id="statSchools">0</div>
+                            <div class="stat-label">Écoles</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-4 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-icon green"><i class="bi bi-people"></i></div>
+                            <div class="stat-number" id="statStudents">0</div>
+                            <div class="stat-label">Étudiants</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-4 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-icon pink"><i class="bi bi-person-heart"></i></div>
+                            <div class="stat-number" id="statParents">0</div>
+                            <div class="stat-label">Parents</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-4 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-icon orange"><i class="bi bi-cash-stack"></i></div>
+                            <div class="stat-number" id="statRevenue">0</div>
+                            <div class="stat-label">Revenus (FCFA)</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-4 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-icon red"><i class="bi bi-clock-history"></i></div>
+                            <div class="stat-number" id="statPending">0</div>
+                            <div class="stat-label">En attente</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-4 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-icon purple"><i class="bi bi-check-circle"></i></div>
+                            <div class="stat-number" id="statCompleted">0</div>
+                            <div class="stat-label">Payés</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Graphiques et activités -->
+                <div class="row g-4">
+                    <div class="col-lg-7">
+                        <div class="card-custom">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-arrow-left-right" style="color:var(--primary);margin-right:8px;"></i> Activités récentes</span>
+                                <a href="#" class="text-decoration-none small fw-semibold" style="color:var(--primary);" onclick="navigateTo('payments')">Voir tout <i class="bi bi-arrow-right"></i></a>
+                            </div>
+                            <div class="card-body" id="recentActivities"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="card-custom">
+                            <div class="card-header">
+                                <span><i class="bi bi-bell" style="color:#f59e0b;margin-right:8px;"></i> Notifications</span>
+                            </div>
+                            <div class="card-body" id="notificationsList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================== -->
+            <!-- SECTION : MES ENFANTS (PARENT)                             -->
+            <!-- ========================================================== -->
+            <div class="page-section" id="section-myChildren">
+                <div class="card-custom">
+                    <div class="card-header">
+                        <span><i class="bi bi-heart-fill" style="color:var(--parent-color);margin-right:8px;"></i> Mes Enfants</span>
+                    </div>
+                    <div class="card-body" id="childrenList"></div>
+                </div>
+            </div>
+
+            <!-- ========================================================== -->
+            <!-- SECTION : ÉTUDIANTS                                        -->
+            <!-- ========================================================== -->
+            <div class="page-section" id="section-students">
+                <div class="card-custom">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-people" style="color:var(--primary);margin-right:8px;"></i> Étudiants</span>
+                        <button class="btn btn-primary btn-sm" onclick="showStudentForm()"><i class="bi bi-plus-lg"></i> Ajouter</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-edugest">
+                                <thead>
+                                    <tr>
+                                        <th>Matricule</th>
+                                        <th>Nom</th>
+                                        <th>Prénom</th>
+                                        <th>Classe</th>
+                                        <th>École</th>
+                                        <th>Parent</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================== -->
+            <!-- SECTION : PAIEMENTS                                        -->
+            <!-- ========================================================== -->
+            <div class="page-section" id="section-payments">
+                <div class="card-custom">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-credit-card" style="color:var(--primary);margin-right:8px;"></i> Paiements</span>
+                        <button class="btn btn-primary btn-sm" onclick="showPaymentForm()"><i class="bi bi-plus-lg"></i> Nouveau</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-edugest">
+                                <thead>
+                                    <tr>
+                                        <th>N° Facture</th>
+                                        <th>Étudiant</th>
+                                        <th>Montant</th>
+                                        <th>Méthode</th>
+                                        <th>Type</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="paymentsList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================== -->
+            <!-- SECTION : MESSAGES                                         -->
+            <!-- ========================================================== -->
+            <div class="page-section" id="section-messages">
+                <div class="card-custom">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-chat-dots" style="color:var(--primary);margin-right:8px;"></i> Messagerie</span>
+                        <button class="btn btn-primary btn-sm" onclick="showMessageForm()"><i class="bi bi-plus-lg"></i> Nouveau</button>
+                    </div>
+                    <div class="card-body" id="messagesList"></div>
+                </div>
+            </div>
+
+            <!-- ========================================================== -->
+            <!-- SECTION : ÉCOLES                                           -->
+            <!-- ========================================================== -->
+            <div class="page-section" id="section-schools">
+                <div class="card-custom">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-building" style="color:var(--primary);margin-right:8px;"></i> Écoles</span>
+                        <button class="btn btn-primary btn-sm" onclick="showSchoolForm()"><i class="bi bi-plus-lg"></i> Ajouter</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="schoolsList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================== -->
+            <!-- SECTION : PARENTS                                          -->
+            <!-- ========================================================== -->
+            <div class="page-section" id="section-parents">
+                <div class="card-custom">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-person-heart" style="color:var(--parent-color);margin-right:8px;"></i> Parents</span>
+                        <button class="btn btn-pink btn-sm" onclick="showParentForm()" style="background:var(--parent-color);color:white;border:none;">
+                            <i class="bi bi-plus-lg"></i> Ajouter
+                        </button>
+                    </div>
+                    <div class="card-body" id="parentsList"></div>
+                </div>
+            </div>
+
+            <!-- ========================================================== -->
+            <!-- SECTION : ENSEIGNANTS                                      -->
+            <!-- ========================================================== -->
+            <div class="page-section" id="section-teachers">
+                <div class="card-custom">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-person-video3" style="color:var(--info);margin-right:8px;"></i> Enseignants</span>
+                        <button class="btn btn-primary btn-sm" onclick="showTeacherForm()"><i class="bi bi-plus-lg"></i> Ajouter</button>
+                    </div>
+                    <div class="card-body">
+                        <div id="teachersList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================== -->
+            <!-- SECTION : CLASSES                                          -->
+            <!-- ========================================================== -->
+            <div class="page-section" id="section-classes">
+                <div class="card-custom">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-easel" style="color:var(--secondary);margin-right:8px;"></i> Classes</span>
+                        <button class="btn btn-primary btn-sm" onclick="showClassForm()"><i class="bi bi-plus-lg"></i> Ajouter</button>
+                    </div>
+                    <div class="card-body" id="classesList"></div>
+                </div>
+            </div>
+
+            <!-- ========================================================== -->
+            <!-- SECTION : RAPPORTS                                         -->
+            <!-- ========================================================== -->
+            <div class="page-section" id="section-reports">
+                <div class="card-custom">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-file-earmark-text" style="color:var(--warning);margin-right:8px;"></i> Génération de rapports</span>
+                        <button class="btn btn-primary btn-sm" onclick="generateQuickReport()">
+                            <i class="bi bi-plus-lg"></i> Nouveau rapport
+                        </button>
+                    </div>
+                    <div class="card-body" id="reportsContent">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded-3 text-center report-card" style="cursor:pointer;" onclick="generateReport('students')">
+                                    <i class="bi bi-people" style="font-size:2rem;color:var(--primary);"></i>
+                                    <h6 class="mt-2">Étudiants</h6>
+                                    <small class="text-muted">Liste complète</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded-3 text-center report-card" style="cursor:pointer;" onclick="generateReport('payments')">
+                                    <i class="bi bi-credit-card" style="font-size:2rem;color:var(--success);"></i>
+                                    <h6 class="mt-2">Paiements</h6>
+                                    <small class="text-muted">Historique financier</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded-3 text-center report-card" style="cursor:pointer;" onclick="generateReport('schools')">
+                                    <i class="bi bi-building" style="font-size:2rem;color:var(--secondary);"></i>
+                                    <h6 class="mt-2">Écoles</h6>
+                                    <small class="text-muted">Liste des écoles</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded-3 text-center report-card" style="cursor:pointer;" onclick="generateReport('parents')">
+                                    <i class="bi bi-person-heart" style="font-size:2rem;color:var(--parent-color);"></i>
+                                    <h6 class="mt-2">Parents</h6>
+                                    <small class="text-muted">Liste des parents</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded-3 text-center report-card" style="cursor:pointer;" onclick="generateReport('classes')">
+                                    <i class="bi bi-easel" style="font-size:2rem;color:var(--info);"></i>
+                                    <h6 class="mt-2">Classes</h6>
+                                    <small class="text-muted">Liste des classes</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded-3 text-center report-card" style="cursor:pointer;" onclick="generateReport('teacher')">
+                                    <i class="bi bi-person-video3" style="font-size:2rem;color:var(--warning);"></i>
+                                    <h6 class="mt-2">Enseignant</h6>
+                                    <small class="text-muted">Rapport individuel</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="reportResult" class="mt-4"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================== -->
+            <!-- SECTION : PARAMÈTRES                                       -->
+            <!-- ========================================================== -->
+            <div class="page-section" id="section-settings">
+                <div class="card-custom">
+                    <div class="card-header">
+                        <span><i class="bi bi-gear" style="color:var(--info);margin-right:8px;"></i> Paramètres du système</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="p-3 border rounded-3">
+                                    <h6><i class="bi bi-globe"></i> Langue</h6>
+                                    <select class="form-select" id="languageSelect">
+                                        <option value="fr">Français</option>
+                                        <option value="sw">Swahili</option>
+                                        <option value="en">Anglais</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 border rounded-3">
+                                    <h6><i class="bi bi-bell"></i> Notifications</h6>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="notifEmail" checked>
+                                        <label class="form-check-label">Notifications par email</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="notifSMS" checked>
+                                        <label class="form-check-label">Notifications par SMS</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-3 border rounded-3">
+                                    <h6><i class="bi bi-database"></i> Données</h6>
+                                    <button class="btn btn-outline-danger btn-sm" onclick="clearData()">Vider les données</button>
+                                    <button class="btn btn-outline-success btn-sm" onclick="exportData()">Exporter les données</button>
+                                    <button class="btn btn-outline-primary btn-sm" onclick="importData()">Importer les données</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
 </div>
 
-<div id="np" class="np hidden"></div>
-<div id="modal-c" class="mo hidden" onclick="if(event.target===this)hideModal()"></div>
-<div id="toasts"></div>
-<input type="file" id="img-input" accept="image/*" class="hidden" onchange="handleImgUpload(event)">
+<!-- ============================================================ -->
+<!-- ===== TOAST ===== -->
+<!-- ============================================================ -->
+<div class="toast-container-custom" id="toastContainer"></div>
 
-<script src="script.js">
+<!-- ============================================================ -->
+<!-- ===== MODAL ===== -->
+<!-- ============================================================ -->
+<div class="modal fade modal-custom" id="appModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Titre</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer" id="modalFooter">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary" id="modalSaveBtn" onclick="modalSave()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-</script>
+<!-- ============================================================ -->
+<!-- ===== SCRIPTS ===== -->
+<!-- ============================================================ -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="app.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
 </body>
 </html>
